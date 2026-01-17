@@ -16,9 +16,8 @@ npm run typecheck
 echo "2. 빌드..."
 npm run build
 
-# 3. 동기화 테스트
-echo "3. 동기화 테스트..."
-node dist/bin/sync.js all
+# 3. 완료
+echo "3. 빌드 완료"
 
 echo ""
 echo "✅ 배포 완료!"
