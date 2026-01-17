@@ -41,6 +41,22 @@ rules/
 자세한 규칙은 rules/ 폴더를 직접 확인하세요.
 `;
 
+const RULEBOOK_CONFIG_CONTENT = `# Rulebook Configuration
+metadata:
+  version: "1.0.0"
+  scope: package
+
+hierarchy:
+  enabled: true
+  mergeStrategy: override
+  conflictResolution: local-wins
+
+# 글로벌 규칙 상속
+inheritance:
+  - path: ~/.config/monol/rules
+    priority: 1
+`;
+
 const CLAUDE_MD_CONTENT = `# Project Rules
 
 이 프로젝트의 코딩 규칙은 \`rules/\` 폴더에 YAML 형식으로 정의되어 있습니다.
@@ -79,12 +95,22 @@ async function init(basePath: string) {
     console.log('✓ rules/ 폴더 생성');
   }
 
-  // 2. .cursorrules 생성
+  // 2. rules/.rulebook-config.yaml 생성 (글로벌 상속 설정)
+  const configPath = path.join(rulesPath, '.rulebook-config.yaml');
+  try {
+    await fs.access(configPath);
+    console.log('✓ rules/.rulebook-config.yaml 이미 존재');
+  } catch {
+    await fs.writeFile(configPath, RULEBOOK_CONFIG_CONTENT, 'utf-8');
+    console.log('✓ rules/.rulebook-config.yaml 생성 (글로벌 규칙 상속)');
+  }
+
+  // 3. .cursorrules 생성
   const cursorrules = path.join(basePath, '.cursorrules');
   await fs.writeFile(cursorrules, CURSORRULES_CONTENT, 'utf-8');
   console.log('✓ .cursorrules 생성 (rules/ 참조)');
 
-  // 3. CLAUDE.md 생성 또는 추가
+  // 4. CLAUDE.md 생성 또는 추가
   const claudeMd = path.join(basePath, 'CLAUDE.md');
   try {
     const existing = await fs.readFile(claudeMd, 'utf-8');
