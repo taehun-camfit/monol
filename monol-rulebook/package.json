@@ -19,7 +19,8 @@
     "typecheck": "tsc --noEmit",
     "sync": "node dist/bin/sync.js all",
     "sync:cursor": "node dist/bin/sync.js cursor",
-    "sync:claude": "node dist/bin/sync.js claude"
+    "sync:claude": "node dist/bin/sync.js claude",
+    "deploy": "./scripts/deploy.sh"
   },
   "keywords": [
     "claude-code",
