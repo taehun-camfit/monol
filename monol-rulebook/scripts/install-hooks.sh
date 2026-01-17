@@ -10,7 +10,7 @@ echo "🔧 Monol Rulebook Hook 설치"
 mkdir -p "$CLAUDE_DIR"
 
 # 2. settings.json 생성 또는 수정
-HOOK_VALUE='[{"matcher": {}, "hooks": [{"type": "command", "command": "monol-rulebook init 2>/dev/null || true"}]}]'
+HOOK_VALUE='[{"hooks": [{"type": "command", "command": "monol-rulebook init 2>/dev/null || true"}]}]'
 
 if [ -f "$CLAUDE_SETTINGS" ]; then
   # 기존 파일이 있으면 hooks 추가 (jq 사용 가능한 경우)
@@ -30,7 +30,6 @@ else
   "hooks": {
     "SessionStart": [
       {
-        "matcher": {},
         "hooks": [
           {
             "type": "command",

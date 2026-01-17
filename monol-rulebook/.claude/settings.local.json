@@ -17,7 +17,8 @@
       "Bash(npm link)",
       "Bash(chmod:*)",
       "Bash(npm run deploy:*)",
-      "Bash(./scripts/install-hooks.sh)"
+      "Bash(./scripts/install-hooks.sh)",
+      "WebFetch(domain:docs.anthropic.com)"
     ]
   }
 }
