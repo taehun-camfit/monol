@@ -1,17 +1,25 @@
 {
   "name": "monol-rulebook",
   "version": "0.1.0",
-  "description": "Claude Code plugin for rule management and synchronization",
+  "description": "로컬 규칙을 Cursor/Claude Code에 동기화하는 CLI 도구",
   "type": "module",
-  "main": "foundations/logic/lib/index.ts",
+  "main": "dist/foundations/logic/lib/index.js",
+  "types": "dist/foundations/logic/lib/index.d.ts",
   "bin": {
-    "monol-rulebook": "./bin/sync.ts"
+    "monol-rulebook": "dist/bin/sync.js"
   },
+  "files": [
+    "dist",
+    "rules"
+  ],
   "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "prepare": "npm run build",
     "typecheck": "tsc --noEmit",
-    "sync": "npx tsx bin/sync.ts all",
-    "sync:cursor": "npx tsx bin/sync.ts cursor",
-    "sync:claude": "npx tsx bin/sync.ts claude"
+    "sync": "node dist/bin/sync.js all",
+    "sync:cursor": "node dist/bin/sync.js cursor",
+    "sync:claude": "node dist/bin/sync.js claude"
   },
   "keywords": [
     "claude-code",

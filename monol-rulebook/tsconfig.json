@@ -12,16 +12,17 @@
     "declarationMap": true,
     "sourceMap": true,
     "outDir": "./dist",
-    "rootDir": "./foundations/logic/lib",
+    "rootDir": ".",
     "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true
+    "isolatedModules": true
   },
   "include": [
-    "foundations/logic/lib/**/*.ts"
+    "foundations/logic/lib/**/*.ts",
+    "bin/**/*.ts"
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "test.ts"
   ]
 }
