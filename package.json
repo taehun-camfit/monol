@@ -1,6 +1,6 @@
 {
   "name": "monol",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Monol Plugin Suite - Claude Code 플러그인 생태계 통합 패키지",
   "keywords": [
     "claude-code",
@@ -16,7 +16,7 @@
   },
   "homepage": "https://github.com/Camfit-Taehun/monol#readme",
   "dependencies": {
-    "monol-logs": "^4.4.0",
+    "monol-logs": "^4.5.0",
     "monol-plugin-scout": "^2.1.3",
     "monol-rulebook": "^0.3.5",
     "monol-channels": "^1.2.0",
