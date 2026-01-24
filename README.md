@@ -2,11 +2,13 @@
 
 Claude Code 플러그인 생태계 통합 패키지
 
-## 설치
+## 빠른 설치
 
 ```bash
-npm install monol
+npm install -g monol
 ```
+
+자세한 설치 방법은 [INSTALL.md](./INSTALL.md)를 참고하세요.
 
 ## 포함된 플러그인
 
