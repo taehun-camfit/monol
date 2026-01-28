@@ -1,0 +1,20 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "monol-rulebook",
+  "description": "규칙 관리 및 플랫폼 동기화",
+  "owner": {
+    "name": "Kent",
+    "email": "kent@example.com"
+  },
+  "plugins": [
+    {
+      "name": "monol-rulebook",
+      "description": "YAML 기반 코딩 규칙을 Cursor/Claude Code에 동기화",
+      "author": {
+        "name": "Kent"
+      },
+      "source": ".",
+      "category": "productivity"
+    }
+  ]
+}

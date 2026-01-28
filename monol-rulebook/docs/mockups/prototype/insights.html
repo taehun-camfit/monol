@@ -1,0 +1,1558 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monol Rulebook - AI 인사이트</title>
+  <!-- Monol Design System -->
+  <link rel="stylesheet" href="../../../../monol-design/monol-design.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            background: '#0a0a0a',
+            foreground: '#fafafa',
+            card: '#171717',
+            'card-foreground': '#fafafa',
+            primary: '#f97316',
+            'primary-foreground': '#fafafa',
+            secondary: '#262626',
+            'secondary-foreground': '#fafafa',
+            muted: '#262626',
+            'muted-foreground': '#a3a3a3',
+            accent: '#262626',
+            'accent-foreground': '#fafafa',
+            border: '#262626',
+            input: '#262626',
+            ring: '#f97316',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .sidebar-item:hover { background: #262626; }
+    .sidebar-item.active { background: #262626; color: #f97316; }
+
+    /* Health Score Ring */
+    .health-ring {
+      transform: rotate(-90deg);
+    }
+    .health-ring-bg {
+      fill: none;
+      stroke: #262626;
+      stroke-width: 8;
+    }
+    .health-ring-progress {
+      fill: none;
+      stroke-width: 8;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1s ease-out;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    @keyframes sparkle {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.8; }
+    }
+    @keyframes countUp {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes toastSlide {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .fade-in { animation: fadeIn 0.5s ease-out; }
+    .slide-in { animation: slideIn 0.5s ease-out; }
+    .pulse { animation: pulse 2s infinite; }
+    .sparkle { animation: sparkle 2s infinite; }
+    .toast { animation: toastSlide 0.3s ease-out; }
+
+    /* Cards */
+    .insight-card {
+      transition: all 0.3s;
+    }
+    .insight-card:hover {
+      transform: translateY(-2px);
+      border-color: #404040;
+    }
+
+    /* AI Badge */
+    .ai-badge {
+      background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+    }
+
+    /* Progress bars */
+    .progress-bar {
+      transition: width 1s ease-out;
+    }
+
+    /* Hotspot heatmap */
+    .hotspot-cell {
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .hotspot-cell:hover {
+      transform: scale(1.1);
+      z-index: 10;
+    }
+
+    /* Recommendation cards */
+    .recommendation-card {
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .recommendation-card:hover {
+      background: #1f1f1f;
+      border-color: #f97316;
+    }
+
+    /* Action item */
+    .action-item {
+      transition: all 0.2s;
+    }
+    .action-item:hover {
+      background: rgba(249, 115, 22, 0.1);
+    }
+
+    /* Trend indicators */
+    .trend-up { color: #22c55e; }
+    .trend-down { color: #ef4444; }
+    .trend-neutral { color: #a3a3a3; }
+
+    /* Tooltip */
+    .tooltip {
+      position: absolute;
+      background: #171717;
+      border: 1px solid #262626;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      z-index: 100;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .tooltip.show { opacity: 1; }
+
+    /* Loading skeleton */
+    .skeleton {
+      background: linear-gradient(90deg, #262626 25%, #333 50%, #262626 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Tab styles */
+    .tab-btn {
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: #f97316;
+      color: white;
+    }
+    .tab-btn:not(.active):hover {
+      background: #262626;
+    }
+  </style>
+</head>
+<body class="bg-background text-foreground min-h-screen">
+  <div class="flex h-screen">
+    <!-- Sidebar -->
+    <aside class="w-64 border-r border-border flex flex-col">
+      <div class="p-4 border-b border-border">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold">R</div>
+          <span class="font-semibold">Rulebook</span>
+        </div>
+        <button class="mt-3 w-full flex items-center justify-between px-3 py-2 bg-secondary rounded-lg text-sm">
+          <span>Frontend Team</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+      </div>
+
+      <nav class="flex-1 p-2">
+        <a href="index.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
+          홈
+        </a>
+        <a href="rules.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          규칙
+        </a>
+        <a href="proposals.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          </svg>
+          제안
+          <span class="ml-auto bg-primary text-xs px-2 py-0.5 rounded-full">3</span>
+        </a>
+        <a href="marketplace.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+          </svg>
+          마켓플레이스
+        </a>
+        <a href="analytics.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+          분석
+        </a>
+        <a href="insights.html" class="sidebar-item active flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+          </svg>
+          AI 인사이트
+          <span class="ml-auto ai-badge text-xs px-2 py-0.5 rounded-full text-white">AI</span>
+        </a>
+
+        <div class="mt-4 pt-4 border-t border-border">
+          <a href="#" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            설정
+          </a>
+        </div>
+      </nav>
+
+      <div class="p-4 border-t border-border">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-sm font-medium">K</div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium truncate">Kent</p>
+            <p class="text-xs text-muted-foreground truncate">Admin</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto">
+      <div class="p-6">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <div class="flex items-center gap-3 mb-1">
+              <h1 class="text-2xl font-semibold">AI 인사이트</h1>
+              <span class="ai-badge text-xs px-2 py-1 rounded-full text-white flex items-center gap-1">
+                <svg class="w-3 h-3 sparkle" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2L9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2z"/>
+                </svg>
+                AI 분석
+              </span>
+            </div>
+            <p class="text-muted-foreground">규칙 사용 패턴을 분석하고 개선점을 발견하세요</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="refreshInsights()" class="px-4 py-2 bg-secondary text-muted-foreground rounded-lg text-sm hover:bg-secondary/80 flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              새로고침
+            </button>
+            <button onclick="generateReport()" class="px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary/90 flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              리포트 생성
+            </button>
+          </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="flex gap-2 mb-6 bg-card border border-border rounded-lg p-1 w-fit">
+          <button class="tab-btn active px-4 py-2 rounded-lg text-sm" data-tab="overview">개요</button>
+          <button class="tab-btn px-4 py-2 rounded-lg text-sm" data-tab="violations">위반 분석</button>
+          <button class="tab-btn px-4 py-2 rounded-lg text-sm" data-tab="recommendations">AI 추천</button>
+          <button class="tab-btn px-4 py-2 rounded-lg text-sm" data-tab="benchmarks">벤치마킹</button>
+          <button class="tab-btn px-4 py-2 rounded-lg text-sm" data-tab="predictions">예측</button>
+        </div>
+
+        <!-- Tab Content: Overview -->
+        <div id="tab-overview" class="tab-content">
+          <!-- Health Score + Key Metrics -->
+          <div class="grid grid-cols-4 gap-6 mb-6">
+            <!-- Health Score -->
+            <div class="col-span-1 insight-card bg-card border border-border rounded-lg p-6">
+              <h3 class="text-sm text-muted-foreground mb-4">규칙 건강도</h3>
+              <div class="flex flex-col items-center">
+                <div class="relative w-32 h-32 mb-4">
+                  <svg class="health-ring w-full h-full" viewBox="0 0 100 100">
+                    <circle class="health-ring-bg" cx="50" cy="50" r="42"/>
+                    <circle id="healthProgress" class="health-ring-progress" cx="50" cy="50" r="42"
+                      stroke="#22c55e" stroke-dasharray="264" stroke-dashoffset="264"/>
+                  </svg>
+                  <div class="absolute inset-0 flex flex-col items-center justify-center">
+                    <span id="healthScore" class="text-3xl font-bold">0</span>
+                    <span class="text-xs text-muted-foreground">/ 100</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 text-sm">
+                  <span class="text-green-400">+5점</span>
+                  <span class="text-muted-foreground">지난 주 대비</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Key Metrics -->
+            <div class="col-span-3 grid grid-cols-3 gap-4">
+              <div class="insight-card bg-card border border-border rounded-lg p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-sm text-muted-foreground">준수율</span>
+                  <span class="text-xs text-green-400 flex items-center gap-1">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+                    </svg>
+                    +3.2%
+                  </span>
+                </div>
+                <p class="text-2xl font-bold mb-1">87.5%</p>
+                <div class="h-2 bg-secondary rounded-full overflow-hidden">
+                  <div class="progress-bar h-full bg-green-500 rounded-full" style="width: 87.5%"></div>
+                </div>
+                <p class="text-xs text-muted-foreground mt-2">업계 평균: 82%</p>
+              </div>
+
+              <div class="insight-card bg-card border border-border rounded-lg p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-sm text-muted-foreground">활용 규칙</span>
+                  <span class="text-xs text-green-400 flex items-center gap-1">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+                    </svg>
+                    +4개
+                  </span>
+                </div>
+                <p class="text-2xl font-bold mb-1">38 <span class="text-sm text-muted-foreground font-normal">/ 42</span></p>
+                <div class="h-2 bg-secondary rounded-full overflow-hidden">
+                  <div class="progress-bar h-full bg-primary rounded-full" style="width: 90%"></div>
+                </div>
+                <p class="text-xs text-muted-foreground mt-2">4개 규칙 미사용</p>
+              </div>
+
+              <div class="insight-card bg-card border border-border rounded-lg p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-sm text-muted-foreground">위반 감소</span>
+                  <span class="text-xs text-green-400 flex items-center gap-1">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+                    </svg>
+                    -23%
+                  </span>
+                </div>
+                <p class="text-2xl font-bold mb-1">156 <span class="text-sm text-muted-foreground font-normal">건</span></p>
+                <div class="h-2 bg-secondary rounded-full overflow-hidden">
+                  <div class="progress-bar h-full bg-blue-500 rounded-full" style="width: 77%"></div>
+                </div>
+                <p class="text-xs text-muted-foreground mt-2">지난 달: 203건</p>
+              </div>
+
+              <div class="insight-card bg-card border border-border rounded-lg p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-sm text-muted-foreground">코드 리뷰 단축</span>
+                  <span class="text-xs text-green-400">-18분</span>
+                </div>
+                <p class="text-2xl font-bold mb-1">42분</p>
+                <p class="text-xs text-muted-foreground">평균 리뷰 시간</p>
+              </div>
+
+              <div class="insight-card bg-card border border-border rounded-lg p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-sm text-muted-foreground">버그 감소</span>
+                  <span class="text-xs text-green-400">-31%</span>
+                </div>
+                <p class="text-2xl font-bold mb-1">12건</p>
+                <p class="text-xs text-muted-foreground">이번 달 버그</p>
+              </div>
+
+              <div class="insight-card bg-card border border-border rounded-lg p-4">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-sm text-muted-foreground">자동 수정</span>
+                  <span class="text-xs text-blue-400">+45%</span>
+                </div>
+                <p class="text-2xl font-bold mb-1">89건</p>
+                <p class="text-xs text-muted-foreground">자동 수정됨</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="bg-gradient-to-r from-primary/20 to-purple-500/20 border border-primary/30 rounded-lg p-4 mb-6">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-primary/30 rounded-lg flex items-center justify-center">
+                  <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="font-medium">즉시 개선 가능한 항목 발견!</h3>
+                  <p class="text-sm text-muted-foreground">3개의 규칙 위반을 자동으로 수정할 수 있습니다</p>
+                </div>
+              </div>
+              <button onclick="autoFix()" class="px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary/90">
+                자동 수정 실행
+              </button>
+            </div>
+          </div>
+
+          <!-- Two Column Layout -->
+          <div class="grid grid-cols-2 gap-6 mb-6">
+            <!-- Top Violations -->
+            <div class="insight-card bg-card border border-border rounded-lg p-4">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-medium">가장 많이 위반되는 규칙</h3>
+                <a href="#" class="text-sm text-primary hover:underline" onclick="switchTab('violations')">전체 보기</a>
+              </div>
+              <div id="topViolations" class="space-y-3">
+                <!-- Rendered by JS -->
+              </div>
+            </div>
+
+            <!-- AI Recommendations Summary -->
+            <div class="insight-card bg-card border border-border rounded-lg p-4">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-medium flex items-center gap-2">
+                  AI 추천
+                  <span class="ai-badge text-xs px-2 py-0.5 rounded text-white">NEW</span>
+                </h3>
+                <a href="#" class="text-sm text-primary hover:underline" onclick="switchTab('recommendations')">전체 보기</a>
+              </div>
+              <div id="aiRecommendations" class="space-y-3">
+                <!-- Rendered by JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Trend Chart -->
+          <div class="insight-card bg-card border border-border rounded-lg p-4 mb-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-medium">준수율 트렌드</h3>
+              <div class="flex gap-2">
+                <button class="trend-period active text-xs px-3 py-1 rounded bg-primary text-white" data-period="7">7일</button>
+                <button class="trend-period text-xs px-3 py-1 rounded bg-secondary" data-period="30">30일</button>
+                <button class="trend-period text-xs px-3 py-1 rounded bg-secondary" data-period="90">90일</button>
+              </div>
+            </div>
+            <div id="trendChart" class="h-48 flex items-end justify-between gap-2 px-4">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+
+          <!-- Action Items -->
+          <div class="insight-card bg-card border border-border rounded-lg p-4">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-medium">추천 액션</h3>
+              <span class="text-sm text-muted-foreground">우선순위순</span>
+            </div>
+            <div id="actionItems" class="space-y-2">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab Content: Violations -->
+        <div id="tab-violations" class="tab-content hidden">
+          <!-- Violation Summary -->
+          <div class="grid grid-cols-4 gap-4 mb-6">
+            <div class="bg-card border border-border rounded-lg p-4">
+              <p class="text-sm text-muted-foreground mb-1">총 위반</p>
+              <p class="text-2xl font-bold text-red-400">156</p>
+              <p class="text-xs text-green-400">-23% vs 지난달</p>
+            </div>
+            <div class="bg-card border border-border rounded-lg p-4">
+              <p class="text-sm text-muted-foreground mb-1">Error 위반</p>
+              <p class="text-2xl font-bold text-red-500">23</p>
+              <p class="text-xs text-muted-foreground">즉시 수정 필요</p>
+            </div>
+            <div class="bg-card border border-border rounded-lg p-4">
+              <p class="text-sm text-muted-foreground mb-1">Warning 위반</p>
+              <p class="text-2xl font-bold text-yellow-500">89</p>
+              <p class="text-xs text-muted-foreground">개선 권장</p>
+            </div>
+            <div class="bg-card border border-border rounded-lg p-4">
+              <p class="text-sm text-muted-foreground mb-1">자동 수정 가능</p>
+              <p class="text-2xl font-bold text-blue-400">67</p>
+              <p class="text-xs text-muted-foreground">43% 자동화</p>
+            </div>
+          </div>
+
+          <!-- Hotspot Heatmap -->
+          <div class="bg-card border border-border rounded-lg p-4 mb-6">
+            <h3 class="font-medium mb-4">위반 핫스팟 (파일/폴더별)</h3>
+            <div id="hotspotMap" class="grid grid-cols-10 gap-1">
+              <!-- Rendered by JS -->
+            </div>
+            <div class="flex justify-between items-center mt-4 text-xs text-muted-foreground">
+              <span>낮음</span>
+              <div class="flex gap-1">
+                <div class="w-4 h-4 bg-green-500/30 rounded"></div>
+                <div class="w-4 h-4 bg-yellow-500/50 rounded"></div>
+                <div class="w-4 h-4 bg-orange-500/70 rounded"></div>
+                <div class="w-4 h-4 bg-red-500 rounded"></div>
+              </div>
+              <span>높음</span>
+            </div>
+          </div>
+
+          <!-- Violation Timeline -->
+          <div class="bg-card border border-border rounded-lg p-4 mb-6">
+            <h3 class="font-medium mb-4">시간대별 위반 패턴</h3>
+            <div id="timelineChart" class="h-32 flex items-end justify-between gap-1">
+              <!-- Rendered by JS -->
+            </div>
+            <div class="flex justify-between mt-2 text-xs text-muted-foreground">
+              <span>00:00</span>
+              <span>06:00</span>
+              <span>12:00</span>
+              <span>18:00</span>
+              <span>24:00</span>
+            </div>
+            <p class="text-sm text-muted-foreground mt-3">
+              <span class="text-primary">인사이트:</span> 오후 2-4시에 위반이 가장 많이 발생합니다. 점심 후 집중력 저하와 관련이 있을 수 있습니다.
+            </p>
+          </div>
+
+          <!-- Detailed Violations List -->
+          <div class="bg-card border border-border rounded-lg p-4">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-medium">위반 상세</h3>
+              <div class="flex gap-2">
+                <select class="bg-secondary border-none rounded px-3 py-1 text-sm">
+                  <option>모든 심각도</option>
+                  <option>Error</option>
+                  <option>Warning</option>
+                  <option>Info</option>
+                </select>
+                <select class="bg-secondary border-none rounded px-3 py-1 text-sm">
+                  <option>최근순</option>
+                  <option>심각도순</option>
+                  <option>빈도순</option>
+                </select>
+              </div>
+            </div>
+            <div id="violationsList" class="space-y-2">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab Content: Recommendations -->
+        <div id="tab-recommendations" class="tab-content hidden">
+          <!-- AI Analysis Banner -->
+          <div class="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30 rounded-lg p-6 mb-6">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 ai-badge rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="font-semibold mb-1">AI가 분석한 팀 맞춤 추천</h3>
+                <p class="text-sm text-muted-foreground mb-3">
+                  팀의 코딩 패턴, 자주 발생하는 이슈, 유사 프로젝트 데이터를 분석하여 최적의 규칙을 추천합니다.
+                </p>
+                <div class="flex gap-2 text-xs">
+                  <span class="bg-purple-500/30 text-purple-300 px-2 py-1 rounded">코드 품질 향상</span>
+                  <span class="bg-blue-500/30 text-blue-300 px-2 py-1 rounded">보안 강화</span>
+                  <span class="bg-green-500/30 text-green-300 px-2 py-1 rounded">생산성 개선</span>
+                </div>
+              </div>
+              <div class="text-right">
+                <p class="text-sm text-muted-foreground">마지막 분석</p>
+                <p class="text-sm">10분 전</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recommendation Categories -->
+          <div class="grid grid-cols-3 gap-4 mb-6">
+            <div class="bg-card border border-border rounded-lg p-4 cursor-pointer hover:border-primary transition-colors" onclick="filterRecommendations('missing')">
+              <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 bg-red-500/20 rounded-lg flex items-center justify-center">
+                  <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="font-medium">누락된 규칙</p>
+                  <p class="text-2xl font-bold text-red-400">5</p>
+                </div>
+              </div>
+              <p class="text-xs text-muted-foreground">필수로 권장되는 규칙이 없습니다</p>
+            </div>
+
+            <div class="bg-card border border-border rounded-lg p-4 cursor-pointer hover:border-primary transition-colors" onclick="filterRecommendations('popular')">
+              <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 bg-yellow-500/20 rounded-lg flex items-center justify-center">
+                  <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="font-medium">인기 규칙</p>
+                  <p class="text-2xl font-bold text-yellow-400">8</p>
+                </div>
+              </div>
+              <p class="text-xs text-muted-foreground">유사 팀에서 많이 사용하는 규칙</p>
+            </div>
+
+            <div class="bg-card border border-border rounded-lg p-4 cursor-pointer hover:border-primary transition-colors" onclick="filterRecommendations('optimize')">
+              <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
+                  <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="font-medium">최적화 제안</p>
+                  <p class="text-2xl font-bold text-green-400">3</p>
+                </div>
+              </div>
+              <p class="text-xs text-muted-foreground">기존 규칙 개선 제안</p>
+            </div>
+          </div>
+
+          <!-- Recommendations List -->
+          <div class="bg-card border border-border rounded-lg p-4">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-medium">추천 규칙</h3>
+              <div class="flex gap-2">
+                <button class="rec-filter active text-xs px-3 py-1 rounded bg-primary text-white" data-filter="all">전체</button>
+                <button class="rec-filter text-xs px-3 py-1 rounded bg-secondary" data-filter="missing">누락</button>
+                <button class="rec-filter text-xs px-3 py-1 rounded bg-secondary" data-filter="popular">인기</button>
+                <button class="rec-filter text-xs px-3 py-1 rounded bg-secondary" data-filter="optimize">최적화</button>
+              </div>
+            </div>
+            <div id="recommendationsList" class="space-y-3">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab Content: Benchmarks -->
+        <div id="tab-benchmarks" class="tab-content hidden">
+          <!-- Industry Comparison -->
+          <div class="grid grid-cols-2 gap-6 mb-6">
+            <div class="bg-card border border-border rounded-lg p-4">
+              <h3 class="font-medium mb-4">업계 평균 대비</h3>
+              <div class="space-y-4">
+                <div>
+                  <div class="flex justify-between text-sm mb-1">
+                    <span>준수율</span>
+                    <span class="text-green-400">+5.5%</span>
+                  </div>
+                  <div class="relative h-4 bg-secondary rounded-full overflow-hidden">
+                    <div class="absolute h-full bg-muted-foreground/30 rounded-full" style="width: 82%"></div>
+                    <div class="absolute h-full bg-green-500 rounded-full" style="width: 87.5%"></div>
+                  </div>
+                  <div class="flex justify-between text-xs text-muted-foreground mt-1">
+                    <span>업계 평균 82%</span>
+                    <span>우리 팀 87.5%</span>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex justify-between text-sm mb-1">
+                    <span>규칙 커버리지</span>
+                    <span class="text-green-400">+12%</span>
+                  </div>
+                  <div class="relative h-4 bg-secondary rounded-full overflow-hidden">
+                    <div class="absolute h-full bg-muted-foreground/30 rounded-full" style="width: 68%"></div>
+                    <div class="absolute h-full bg-primary rounded-full" style="width: 80%"></div>
+                  </div>
+                  <div class="flex justify-between text-xs text-muted-foreground mt-1">
+                    <span>업계 평균 68%</span>
+                    <span>우리 팀 80%</span>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex justify-between text-sm mb-1">
+                    <span>자동 수정률</span>
+                    <span class="text-yellow-400">-5%</span>
+                  </div>
+                  <div class="relative h-4 bg-secondary rounded-full overflow-hidden">
+                    <div class="absolute h-full bg-muted-foreground/30 rounded-full" style="width: 48%"></div>
+                    <div class="absolute h-full bg-yellow-500 rounded-full" style="width: 43%"></div>
+                  </div>
+                  <div class="flex justify-between text-xs text-muted-foreground mt-1">
+                    <span>업계 평균 48%</span>
+                    <span>우리 팀 43%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-card border border-border rounded-lg p-4">
+              <h3 class="font-medium mb-4">유사 팀 비교</h3>
+              <div id="teamComparison" class="space-y-3">
+                <!-- Rendered by JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Ranking -->
+          <div class="bg-card border border-border rounded-lg p-4 mb-6">
+            <h3 class="font-medium mb-4">조직 내 순위</h3>
+            <div class="grid grid-cols-5 gap-4">
+              <div class="text-center">
+                <div class="w-16 h-16 mx-auto bg-secondary rounded-full flex items-center justify-center text-2xl mb-2">3</div>
+                <p class="text-sm text-muted-foreground">Design Team</p>
+                <p class="text-xs">85.2%</p>
+              </div>
+              <div class="text-center">
+                <div class="w-16 h-16 mx-auto bg-secondary rounded-full flex items-center justify-center text-2xl mb-2">2</div>
+                <p class="text-sm text-muted-foreground">Backend Team</p>
+                <p class="text-xs">86.8%</p>
+              </div>
+              <div class="text-center">
+                <div class="w-20 h-20 mx-auto bg-primary rounded-full flex items-center justify-center text-3xl font-bold mb-2 ring-4 ring-primary/30">1</div>
+                <p class="text-sm font-medium">Frontend Team</p>
+                <p class="text-xs text-primary">87.5%</p>
+              </div>
+              <div class="text-center">
+                <div class="w-16 h-16 mx-auto bg-secondary rounded-full flex items-center justify-center text-2xl mb-2">4</div>
+                <p class="text-sm text-muted-foreground">Mobile Team</p>
+                <p class="text-xs">83.1%</p>
+              </div>
+              <div class="text-center">
+                <div class="w-16 h-16 mx-auto bg-secondary rounded-full flex items-center justify-center text-2xl mb-2">5</div>
+                <p class="text-sm text-muted-foreground">DevOps Team</p>
+                <p class="text-xs">79.4%</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Improvement Areas -->
+          <div class="bg-card border border-border rounded-lg p-4">
+            <h3 class="font-medium mb-4">개선 우선순위</h3>
+            <div id="improvementAreas" class="space-y-3">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab Content: Predictions -->
+        <div id="tab-predictions" class="tab-content hidden">
+          <!-- Prediction Summary -->
+          <div class="grid grid-cols-3 gap-4 mb-6">
+            <div class="bg-card border border-border rounded-lg p-4">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
+                  <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm text-muted-foreground">예상 준수율 (다음 달)</p>
+                  <p class="text-2xl font-bold text-green-400">89.2%</p>
+                </div>
+              </div>
+              <p class="text-xs text-muted-foreground">현재 추세 유지 시 +1.7% 개선 예상</p>
+            </div>
+
+            <div class="bg-card border border-border rounded-lg p-4">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 bg-yellow-500/20 rounded-lg flex items-center justify-center">
+                  <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm text-muted-foreground">주의 필요 규칙</p>
+                  <p class="text-2xl font-bold text-yellow-400">3개</p>
+                </div>
+              </div>
+              <p class="text-xs text-muted-foreground">위반 증가 추세 감지</p>
+            </div>
+
+            <div class="bg-card border border-border rounded-lg p-4">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                  <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm text-muted-foreground">신규 멤버 적응 기간</p>
+                  <p class="text-2xl font-bold text-blue-400">2.3주</p>
+                </div>
+              </div>
+              <p class="text-xs text-muted-foreground">평균 온보딩 기간</p>
+            </div>
+          </div>
+
+          <!-- Prediction Chart -->
+          <div class="bg-card border border-border rounded-lg p-4 mb-6">
+            <h3 class="font-medium mb-4">준수율 예측 (향후 3개월)</h3>
+            <div id="predictionChart" class="h-48 relative">
+              <!-- Rendered by JS -->
+            </div>
+            <div class="flex justify-center gap-6 mt-4 text-sm">
+              <span class="flex items-center gap-2">
+                <span class="w-3 h-3 bg-primary rounded"></span>
+                실제 데이터
+              </span>
+              <span class="flex items-center gap-2">
+                <span class="w-3 h-3 bg-primary/50 rounded border-2 border-dashed border-primary"></span>
+                예측
+              </span>
+              <span class="flex items-center gap-2">
+                <span class="w-3 h-3 bg-green-500/30 rounded"></span>
+                신뢰 구간
+              </span>
+            </div>
+          </div>
+
+          <!-- Risk Alerts -->
+          <div class="bg-card border border-border rounded-lg p-4 mb-6">
+            <h3 class="font-medium mb-4">위험 경고</h3>
+            <div id="riskAlerts" class="space-y-3">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+
+          <!-- New Member Prediction -->
+          <div class="bg-card border border-border rounded-lg p-4">
+            <h3 class="font-medium mb-4">신규 멤버 적응 예측</h3>
+            <div class="grid grid-cols-2 gap-6">
+              <div>
+                <p class="text-sm text-muted-foreground mb-3">신규 멤버가 팀 평균 준수율에 도달하기까지</p>
+                <div class="flex items-center gap-4">
+                  <div class="w-24 h-24 relative">
+                    <svg class="w-full h-full" viewBox="0 0 100 100">
+                      <circle class="fill-none stroke-secondary" cx="50" cy="50" r="40" stroke-width="8"/>
+                      <circle class="fill-none stroke-blue-500" cx="50" cy="50" r="40" stroke-width="8"
+                        stroke-dasharray="251.2" stroke-dashoffset="88" stroke-linecap="round"
+                        style="transform: rotate(-90deg); transform-origin: center;"/>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                      <span class="text-xl font-bold">65%</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p class="text-lg font-semibold">약 2.3주</p>
+                    <p class="text-sm text-muted-foreground">예상 적응 기간</p>
+                    <p class="text-xs text-green-400 mt-1">업계 평균보다 0.5주 빠름</p>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <p class="text-sm text-muted-foreground mb-3">주요 학습 영역</p>
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between p-2 bg-secondary/50 rounded">
+                    <span class="text-sm">네이밍 규칙</span>
+                    <span class="text-xs text-muted-foreground">3일 예상</span>
+                  </div>
+                  <div class="flex items-center justify-between p-2 bg-secondary/50 rounded">
+                    <span class="text-sm">코드 스타일</span>
+                    <span class="text-xs text-muted-foreground">5일 예상</span>
+                  </div>
+                  <div class="flex items-center justify-between p-2 bg-secondary/50 rounded">
+                    <span class="text-sm">보안 규칙</span>
+                    <span class="text-xs text-muted-foreground">7일 예상</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+
+  <!-- Report Modal -->
+  <div id="reportModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+    <div class="bg-card border border-border rounded-xl w-full max-w-lg mx-4 overflow-hidden fade-in">
+      <div class="p-6">
+        <h3 class="text-lg font-semibold mb-4">AI 인사이트 리포트 생성</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="text-sm text-muted-foreground mb-2 block">리포트 유형</label>
+            <select class="w-full bg-secondary border-none rounded-lg px-4 py-2">
+              <option>전체 인사이트 리포트</option>
+              <option>위반 분석 리포트</option>
+              <option>벤치마킹 리포트</option>
+              <option>예측 분석 리포트</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-sm text-muted-foreground mb-2 block">기간</label>
+            <select class="w-full bg-secondary border-none rounded-lg px-4 py-2">
+              <option>지난 7일</option>
+              <option>지난 30일</option>
+              <option>지난 90일</option>
+              <option>전체 기간</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-sm text-muted-foreground mb-2 block">포함 항목</label>
+            <div class="space-y-2">
+              <label class="flex items-center gap-2">
+                <input type="checkbox" checked class="rounded bg-secondary border-border">
+                <span class="text-sm">요약 통계</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input type="checkbox" checked class="rounded bg-secondary border-border">
+                <span class="text-sm">AI 추천</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input type="checkbox" checked class="rounded bg-secondary border-border">
+                <span class="text-sm">차트 및 그래프</span>
+              </label>
+              <label class="flex items-center gap-2">
+                <input type="checkbox" class="rounded bg-secondary border-border">
+                <span class="text-sm">상세 위반 목록</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 p-4 border-t border-border">
+        <button onclick="closeReportModal()" class="px-4 py-2 text-sm text-muted-foreground hover:text-foreground">취소</button>
+        <button onclick="downloadReport()" class="px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary/90">
+          리포트 생성
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // State
+    let currentTab = 'overview';
+    let recommendationFilter = 'all';
+
+    // Mock Data
+    const healthScore = 78;
+
+    const topViolations = [
+      { rule: 'naming-variable-001', name: '변수명 규칙', count: 45, severity: 'warning', trend: 'down', trendValue: '-12%' },
+      { rule: 'style-indent-001', name: '들여쓰기 규칙', count: 32, severity: 'warning', trend: 'up', trendValue: '+8%' },
+      { rule: 'security-sql-001', name: 'SQL Injection 방지', count: 23, severity: 'error', trend: 'down', trendValue: '-5%' },
+      { rule: 'api-error-001', name: 'API 에러 핸들링', count: 18, severity: 'warning', trend: 'neutral', trendValue: '0%' },
+      { rule: 'comment-jsdoc-001', name: 'JSDoc 주석', count: 15, severity: 'info', trend: 'down', trendValue: '-20%' }
+    ];
+
+    const aiRecommendations = [
+      { type: 'missing', priority: 'high', title: 'XSS 방지 규칙 추가', description: '보안 취약점 감지: 사용자 입력 검증 규칙이 없습니다', impact: '보안 위험 85% 감소 예상', source: 'AI 분석' },
+      { type: 'popular', priority: 'medium', title: 'React Hooks 규칙', description: '유사 팀 89%가 사용 중인 규칙입니다', impact: '코드 품질 12% 향상 예상', source: '벤치마크' },
+      { type: 'optimize', priority: 'low', title: '네이밍 규칙 최적화', description: '현재 규칙이 너무 엄격하여 위반이 많습니다', impact: '위반 40% 감소 예상', source: '패턴 분석' }
+    ];
+
+    const fullRecommendations = [
+      { type: 'missing', priority: 'high', title: 'XSS 방지 규칙', description: '사용자 입력 검증 및 출력 이스케이프 규칙', impact: '보안 위험 85% 감소', adoptionRate: '92%', source: 'Security Team' },
+      { type: 'missing', priority: 'high', title: 'CSRF 토큰 검증', description: 'API 요청 시 CSRF 토큰 필수 검증', impact: '보안 위험 78% 감소', adoptionRate: '88%', source: 'Security Team' },
+      { type: 'missing', priority: 'medium', title: '비동기 에러 처리', description: 'async/await 에러 핸들링 표준화', impact: '버그 32% 감소', adoptionRate: '76%', source: 'FE Guild' },
+      { type: 'popular', priority: 'medium', title: 'React Hooks 규칙', description: 'useEffect 의존성 배열 필수 명시', impact: '코드 품질 12% 향상', adoptionRate: '89%', source: 'FE Guild' },
+      { type: 'popular', priority: 'medium', title: 'TypeScript strict 모드', description: 'strict 타입 체크 활성화', impact: '타입 에러 45% 감소', adoptionRate: '72%', source: 'Platform Team' },
+      { type: 'popular', priority: 'low', title: '로깅 표준화', description: '구조화된 로그 포맷 사용', impact: '디버깅 시간 25% 단축', adoptionRate: '65%', source: 'DevOps Team' },
+      { type: 'optimize', priority: 'medium', title: '네이밍 규칙 완화', description: '상수에 대한 예외 케이스 추가', impact: '위반 40% 감소', adoptionRate: '-', source: 'AI 제안' },
+      { type: 'optimize', priority: 'low', title: '주석 규칙 자동화', description: '자동 생성 가능한 주석은 린터로 대체', impact: '생산성 15% 향상', adoptionRate: '-', source: 'AI 제안' }
+    ];
+
+    const trendData = {
+      7: [82, 84, 83, 85, 86, 87, 87.5],
+      30: [75, 77, 78, 80, 82, 83, 85, 84, 85, 86, 87, 87.5],
+      90: [65, 68, 70, 72, 75, 77, 78, 80, 82, 83, 85, 87.5]
+    };
+
+    const actionItems = [
+      { priority: 'high', title: '즉시 수정: SQL Injection 위험', description: 'security-sql-001 규칙 위반 23건 발견', action: '자동 수정 가능' },
+      { priority: 'high', title: 'XSS 방지 규칙 추가', description: '보안 분석 결과 필수 규칙 누락 감지', action: '규칙 추가' },
+      { priority: 'medium', title: '네이밍 규칙 검토', description: '위반율이 높아 규칙 조정 권장', action: '규칙 수정' },
+      { priority: 'low', title: '미사용 규칙 정리', description: '4개 규칙이 3개월간 미사용', action: '비활성화 검토' }
+    ];
+
+    const hotspotData = [
+      { path: 'src/components', violations: 45, color: 'bg-red-500' },
+      { path: 'src/utils', violations: 32, color: 'bg-orange-500' },
+      { path: 'src/api', violations: 28, color: 'bg-yellow-500' },
+      { path: 'src/hooks', violations: 15, color: 'bg-green-500/50' },
+      { path: 'src/pages', violations: 12, color: 'bg-green-500/30' }
+    ];
+
+    const hourlyViolations = [
+      2, 1, 0, 0, 1, 3, 8, 15, 22, 28, 25, 20,
+      18, 35, 42, 38, 30, 25, 15, 8, 5, 3, 2, 1
+    ];
+
+    const violationsList = [
+      { file: 'src/components/UserCard.tsx', rule: 'naming-variable-001', line: 23, severity: 'warning', message: '변수명 user_name은 camelCase로 변경해야 합니다', autoFix: true },
+      { file: 'src/api/auth.ts', rule: 'security-sql-001', line: 45, severity: 'error', message: '쿼리에 파라미터 바인딩을 사용하세요', autoFix: false },
+      { file: 'src/utils/format.ts', rule: 'style-indent-001', line: 12, severity: 'warning', message: '들여쓰기가 일관되지 않습니다', autoFix: true },
+      { file: 'src/hooks/useAuth.ts', rule: 'api-error-001', line: 67, severity: 'warning', message: 'try-catch로 에러를 처리하세요', autoFix: false }
+    ];
+
+    const teamComparison = [
+      { name: 'Backend Team', score: 86.8, diff: '-0.7%', trend: 'down' },
+      { name: 'Mobile Team', score: 83.1, diff: '+4.4%', trend: 'up' },
+      { name: 'Design System', score: 91.2, diff: '-3.7%', trend: 'down' },
+      { name: 'Platform Team', score: 84.5, diff: '+3.0%', trend: 'up' }
+    ];
+
+    const improvementAreas = [
+      { area: '보안 규칙', current: 72, target: 90, priority: 'high', suggestion: 'XSS, CSRF 방지 규칙 추가 권장' },
+      { area: '에러 핸들링', current: 78, target: 85, priority: 'medium', suggestion: 'async/await 에러 처리 표준화' },
+      { area: '자동 수정률', current: 43, target: 60, priority: 'medium', suggestion: 'ESLint 자동 수정 규칙 활성화' }
+    ];
+
+    const riskAlerts = [
+      { severity: 'warning', title: 'style-indent-001 위반 증가 추세', description: '지난 2주간 위반이 35% 증가했습니다. 새 프로젝트 세팅 문제일 수 있습니다.', prediction: '다음 주 50건 이상 예상' },
+      { severity: 'info', title: '신규 팀원 온보딩 중', description: '2명의 신규 팀원이 적응 중입니다. 일시적 위반 증가가 예상됩니다.', prediction: '2주 후 정상화 예상' },
+      { severity: 'success', title: 'security-sql-001 개선 중', description: '보안 규칙 준수율이 꾸준히 개선되고 있습니다.', prediction: '4주 후 95% 달성 예상' }
+    ];
+
+    // Render Functions
+    function renderHealthScore() {
+      const progress = document.getElementById('healthProgress');
+      const scoreEl = document.getElementById('healthScore');
+      const circumference = 2 * Math.PI * 42;
+      const offset = circumference - (healthScore / 100) * circumference;
+
+      setTimeout(() => {
+        progress.style.strokeDashoffset = offset;
+        animateNumber(scoreEl, healthScore);
+      }, 300);
+
+      // Set color based on score
+      if (healthScore >= 80) {
+        progress.style.stroke = '#22c55e';
+      } else if (healthScore >= 60) {
+        progress.style.stroke = '#f97316';
+      } else {
+        progress.style.stroke = '#ef4444';
+      }
+    }
+
+    function animateNumber(el, target) {
+      const duration = 1000;
+      const startTime = performance.now();
+
+      function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.round(target * eased);
+
+        if (progress < 1) {
+          requestAnimationFrame(update);
+        }
+      }
+      requestAnimationFrame(update);
+    }
+
+    function renderTopViolations() {
+      const container = document.getElementById('topViolations');
+      const severityColors = {
+        error: 'bg-red-500/20 text-red-400',
+        warning: 'bg-yellow-500/20 text-yellow-400',
+        info: 'bg-blue-500/20 text-blue-400'
+      };
+      const trendIcons = {
+        up: '<svg class="w-3 h-3 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>',
+        down: '<svg class="w-3 h-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>',
+        neutral: '<svg class="w-3 h-3 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>'
+      };
+
+      container.innerHTML = topViolations.map((v, i) => `
+        <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/50 cursor-pointer fade-in" style="animation-delay: ${i * 0.1}s">
+          <span class="text-lg font-bold ${i === 0 ? 'text-red-400' : 'text-muted-foreground'} w-6">${i + 1}</span>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <span class="tag ${severityColors[v.severity]} text-xs">${v.severity}</span>
+              <span class="font-medium text-sm truncate">${v.name}</span>
+            </div>
+            <p class="text-xs text-muted-foreground">${v.rule}</p>
+          </div>
+          <div class="text-right">
+            <p class="font-semibold">${v.count}</p>
+            <p class="text-xs flex items-center gap-1 justify-end ${v.trend === 'up' ? 'text-red-400' : v.trend === 'down' ? 'text-green-400' : 'text-muted-foreground'}">
+              ${trendIcons[v.trend]}
+              ${v.trendValue}
+            </p>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderAiRecommendations() {
+      const container = document.getElementById('aiRecommendations');
+      const priorityColors = {
+        high: 'bg-red-500',
+        medium: 'bg-yellow-500',
+        low: 'bg-blue-500'
+      };
+      const typeIcons = {
+        missing: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>',
+        popular: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>',
+        optimize: '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>'
+      };
+
+      container.innerHTML = aiRecommendations.map((r, i) => `
+        <div class="recommendation-card flex items-start gap-3 p-3 bg-secondary/30 rounded-lg border border-transparent fade-in" style="animation-delay: ${i * 0.1}s">
+          <div class="w-8 h-8 ai-badge rounded-lg flex items-center justify-center text-white flex-shrink-0">
+            ${typeIcons[r.type]}
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="w-2 h-2 ${priorityColors[r.priority]} rounded-full"></span>
+              <span class="font-medium text-sm">${r.title}</span>
+            </div>
+            <p class="text-xs text-muted-foreground mb-1">${r.description}</p>
+            <p class="text-xs text-green-400">${r.impact}</p>
+          </div>
+          <button class="text-xs text-primary hover:underline flex-shrink-0">적용</button>
+        </div>
+      `).join('');
+    }
+
+    function renderTrendChart(period = 7) {
+      const container = document.getElementById('trendChart');
+      const data = trendData[period];
+      const maxValue = Math.max(...data);
+
+      container.innerHTML = data.map((value, i) => {
+        const height = (value / maxValue) * 100;
+        return `
+          <div class="flex-1 flex flex-col items-center gap-1">
+            <div class="w-full bg-primary/20 rounded-t relative" style="height: ${height}%">
+              <div class="absolute inset-0 bg-primary rounded-t transition-all duration-500" style="height: 100%"></div>
+              <div class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-muted-foreground opacity-0 hover:opacity-100 transition-opacity">
+                ${value}%
+              </div>
+            </div>
+            <span class="text-xs text-muted-foreground">${i + 1}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderActionItems() {
+      const container = document.getElementById('actionItems');
+      const priorityColors = {
+        high: 'border-l-red-500',
+        medium: 'border-l-yellow-500',
+        low: 'border-l-blue-500'
+      };
+      const priorityLabels = {
+        high: '높음',
+        medium: '보통',
+        low: '낮음'
+      };
+
+      container.innerHTML = actionItems.map((item, i) => `
+        <div class="action-item flex items-center gap-4 p-3 border-l-4 ${priorityColors[item.priority]} bg-secondary/30 rounded-r-lg cursor-pointer fade-in" style="animation-delay: ${i * 0.1}s">
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-xs text-muted-foreground">${priorityLabels[item.priority]}</span>
+              <span class="font-medium text-sm">${item.title}</span>
+            </div>
+            <p class="text-xs text-muted-foreground">${item.description}</p>
+          </div>
+          <button class="px-3 py-1 text-xs bg-primary/20 text-primary rounded hover:bg-primary/30">
+            ${item.action}
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function renderHotspotMap() {
+      const container = document.getElementById('hotspotMap');
+      const cells = [];
+
+      // Generate 50 cells with varying intensities
+      for (let i = 0; i < 50; i++) {
+        const intensity = Math.random();
+        let color;
+        if (intensity < 0.3) color = 'bg-green-500/30';
+        else if (intensity < 0.5) color = 'bg-yellow-500/50';
+        else if (intensity < 0.7) color = 'bg-orange-500/70';
+        else color = 'bg-red-500';
+
+        cells.push(`<div class="hotspot-cell w-full aspect-square ${color} rounded" title="위반: ${Math.floor(intensity * 50)}건"></div>`);
+      }
+
+      container.innerHTML = cells.join('');
+    }
+
+    function renderTimelineChart() {
+      const container = document.getElementById('timelineChart');
+      const maxValue = Math.max(...hourlyViolations);
+
+      container.innerHTML = hourlyViolations.map((value, i) => {
+        const height = (value / maxValue) * 100;
+        const isPeak = value === maxValue;
+        return `
+          <div class="flex-1 ${isPeak ? 'bg-red-500' : 'bg-primary/50'} rounded-t transition-all hover:opacity-80 cursor-pointer"
+               style="height: ${height}%"
+               title="${i}:00 - ${value}건"></div>
+        `;
+      }).join('');
+    }
+
+    function renderViolationsList() {
+      const container = document.getElementById('violationsList');
+      const severityColors = {
+        error: 'bg-red-500/20 text-red-400',
+        warning: 'bg-yellow-500/20 text-yellow-400',
+        info: 'bg-blue-500/20 text-blue-400'
+      };
+
+      container.innerHTML = violationsList.map((v, i) => `
+        <div class="flex items-center gap-4 p-3 bg-secondary/30 rounded-lg hover:bg-secondary/50 cursor-pointer fade-in" style="animation-delay: ${i * 0.05}s">
+          <span class="tag ${severityColors[v.severity]} text-xs">${v.severity}</span>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium truncate">${v.file}:${v.line}</p>
+            <p class="text-xs text-muted-foreground truncate">${v.message}</p>
+          </div>
+          <div class="flex items-center gap-2">
+            ${v.autoFix ? '<span class="text-xs text-green-400">자동 수정 가능</span>' : ''}
+            <button class="px-2 py-1 text-xs bg-secondary rounded hover:bg-secondary/80">보기</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderFullRecommendations() {
+      const container = document.getElementById('recommendationsList');
+      const filtered = recommendationFilter === 'all'
+        ? fullRecommendations
+        : fullRecommendations.filter(r => r.type === recommendationFilter);
+
+      const priorityColors = {
+        high: 'border-red-500',
+        medium: 'border-yellow-500',
+        low: 'border-blue-500'
+      };
+      const typeLabels = {
+        missing: '누락',
+        popular: '인기',
+        optimize: '최적화'
+      };
+      const typeBadgeColors = {
+        missing: 'bg-red-500/20 text-red-400',
+        popular: 'bg-yellow-500/20 text-yellow-400',
+        optimize: 'bg-green-500/20 text-green-400'
+      };
+
+      container.innerHTML = filtered.map((r, i) => `
+        <div class="recommendation-card p-4 bg-secondary/30 rounded-lg border-l-4 ${priorityColors[r.priority]} fade-in" style="animation-delay: ${i * 0.05}s">
+          <div class="flex items-start justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="tag ${typeBadgeColors[r.type]} text-xs">${typeLabels[r.type]}</span>
+              <h4 class="font-medium">${r.title}</h4>
+            </div>
+            <span class="text-xs text-muted-foreground">${r.source}</span>
+          </div>
+          <p class="text-sm text-muted-foreground mb-3">${r.description}</p>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4 text-xs">
+              <span class="text-green-400">${r.impact}</span>
+              ${r.adoptionRate !== '-' ? `<span class="text-muted-foreground">채택률 ${r.adoptionRate}</span>` : ''}
+            </div>
+            <div class="flex gap-2">
+              <button class="px-3 py-1 text-xs bg-secondary rounded hover:bg-secondary/80">상세보기</button>
+              <button class="px-3 py-1 text-xs bg-primary text-white rounded hover:bg-primary/90">채택하기</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderTeamComparison() {
+      const container = document.getElementById('teamComparison');
+
+      container.innerHTML = teamComparison.map((team, i) => `
+        <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary/50 fade-in" style="animation-delay: ${i * 0.1}s">
+          <div class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center text-sm">${team.name[0]}</div>
+          <div class="flex-1">
+            <p class="font-medium text-sm">${team.name}</p>
+            <div class="flex items-center gap-2">
+              <div class="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
+                <div class="h-full bg-primary rounded-full" style="width: ${team.score}%"></div>
+              </div>
+              <span class="text-xs w-12">${team.score}%</span>
+            </div>
+          </div>
+          <span class="text-xs ${team.trend === 'up' ? 'text-green-400' : 'text-red-400'}">${team.diff}</span>
+        </div>
+      `).join('');
+    }
+
+    function renderImprovementAreas() {
+      const container = document.getElementById('improvementAreas');
+      const priorityColors = {
+        high: 'text-red-400',
+        medium: 'text-yellow-400',
+        low: 'text-blue-400'
+      };
+
+      container.innerHTML = improvementAreas.map((area, i) => `
+        <div class="p-4 bg-secondary/30 rounded-lg fade-in" style="animation-delay: ${i * 0.1}s">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="font-medium">${area.area}</span>
+              <span class="text-xs ${priorityColors[area.priority]}">우선순위 ${area.priority === 'high' ? '높음' : area.priority === 'medium' ? '보통' : '낮음'}</span>
+            </div>
+            <span class="text-sm">${area.current}% → ${area.target}%</span>
+          </div>
+          <div class="h-2 bg-secondary rounded-full overflow-hidden mb-2">
+            <div class="h-full bg-primary rounded-full relative" style="width: ${area.current}%">
+              <div class="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-4 bg-green-500 rounded" style="left: ${(area.target - area.current) / area.current * 100}%"></div>
+            </div>
+          </div>
+          <p class="text-xs text-muted-foreground">${area.suggestion}</p>
+        </div>
+      `).join('');
+    }
+
+    function renderPredictionChart() {
+      const container = document.getElementById('predictionChart');
+
+      // Simple visualization for prediction
+      const actualData = [80, 82, 84, 85, 86, 87, 87.5];
+      const predictedData = [88, 88.5, 89, 89.2];
+
+      const allData = [...actualData, ...predictedData];
+      const maxVal = Math.max(...allData);
+      const minVal = Math.min(...allData) - 5;
+
+      const chartHTML = `
+        <div class="absolute inset-0 flex items-end justify-between gap-1 px-4 pb-8">
+          ${actualData.map((v, i) => `
+            <div class="flex-1 flex flex-col items-center">
+              <div class="w-full bg-primary rounded-t" style="height: ${((v - minVal) / (maxVal - minVal)) * 100}%"></div>
+            </div>
+          `).join('')}
+          ${predictedData.map((v, i) => `
+            <div class="flex-1 flex flex-col items-center">
+              <div class="w-full bg-primary/50 rounded-t border-2 border-dashed border-primary" style="height: ${((v - minVal) / (maxVal - minVal)) * 100}%"></div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="absolute bottom-0 left-0 right-0 flex justify-between text-xs text-muted-foreground px-4">
+          <span>7주 전</span>
+          <span>현재</span>
+          <span>4주 후</span>
+        </div>
+        <div class="absolute top-4 right-4 bg-green-500/20 text-green-400 px-3 py-1 rounded text-sm">
+          +1.7% 예상
+        </div>
+      `;
+
+      container.innerHTML = chartHTML;
+    }
+
+    function renderRiskAlerts() {
+      const container = document.getElementById('riskAlerts');
+      const severityStyles = {
+        warning: { bg: 'bg-yellow-500/20', border: 'border-yellow-500', icon: 'text-yellow-400' },
+        info: { bg: 'bg-blue-500/20', border: 'border-blue-500', icon: 'text-blue-400' },
+        success: { bg: 'bg-green-500/20', border: 'border-green-500', icon: 'text-green-400' }
+      };
+      const severityIcons = {
+        warning: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>',
+        info: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+        success: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+      };
+
+      container.innerHTML = riskAlerts.map((alert, i) => {
+        const style = severityStyles[alert.severity];
+        return `
+          <div class="p-4 ${style.bg} border ${style.border} rounded-lg fade-in" style="animation-delay: ${i * 0.1}s">
+            <div class="flex items-start gap-3">
+              <div class="${style.icon}">${severityIcons[alert.severity]}</div>
+              <div class="flex-1">
+                <h4 class="font-medium mb-1">${alert.title}</h4>
+                <p class="text-sm text-muted-foreground mb-2">${alert.description}</p>
+                <p class="text-xs ${style.icon}">${alert.prediction}</p>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Tab switching
+    function switchTab(tabName) {
+      currentTab = tabName;
+
+      // Update tab buttons
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabName);
+      });
+
+      // Update tab content
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.toggle('hidden', content.id !== `tab-${tabName}`);
+      });
+
+      // Render content for the new tab
+      renderTabContent(tabName);
+    }
+
+    function renderTabContent(tabName) {
+      switch(tabName) {
+        case 'overview':
+          renderHealthScore();
+          renderTopViolations();
+          renderAiRecommendations();
+          renderTrendChart(7);
+          renderActionItems();
+          break;
+        case 'violations':
+          renderHotspotMap();
+          renderTimelineChart();
+          renderViolationsList();
+          break;
+        case 'recommendations':
+          renderFullRecommendations();
+          break;
+        case 'benchmarks':
+          renderTeamComparison();
+          renderImprovementAreas();
+          break;
+        case 'predictions':
+          renderPredictionChart();
+          renderRiskAlerts();
+          break;
+      }
+    }
+
+    // Utility functions
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const colors = { success: 'bg-green-600', error: 'bg-red-600', info: 'bg-blue-600' };
+
+      const toast = document.createElement('div');
+      toast.className = `toast ${colors[type]} text-white px-4 py-2 rounded-lg shadow-lg text-sm`;
+      toast.textContent = message;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        toast.style.transition = 'all 0.3s';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    function refreshInsights() {
+      showToast('인사이트를 새로고침하는 중...', 'info');
+      setTimeout(() => {
+        renderTabContent(currentTab);
+        showToast('인사이트가 업데이트되었습니다', 'success');
+      }, 1000);
+    }
+
+    function generateReport() {
+      document.getElementById('reportModal').classList.remove('hidden');
+    }
+
+    function closeReportModal() {
+      document.getElementById('reportModal').classList.add('hidden');
+    }
+
+    function downloadReport() {
+      closeReportModal();
+      showToast('리포트 생성 중...', 'info');
+      setTimeout(() => {
+        showToast('AI_Insights_Report_2025-01-19.pdf 다운로드 완료', 'success');
+      }, 2000);
+    }
+
+    function autoFix() {
+      showToast('자동 수정 실행 중...', 'info');
+      setTimeout(() => {
+        showToast('3개의 위반 사항이 자동 수정되었습니다', 'success');
+      }, 1500);
+    }
+
+    function filterRecommendations(type) {
+      recommendationFilter = type;
+
+      document.querySelectorAll('.rec-filter').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === type);
+        btn.classList.toggle('bg-primary', btn.dataset.filter === type);
+        btn.classList.toggle('text-white', btn.dataset.filter === type);
+        btn.classList.toggle('bg-secondary', btn.dataset.filter !== type);
+      });
+
+      renderFullRecommendations();
+    }
+
+    // Event Listeners
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
+    document.querySelectorAll('.trend-period').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.trend-period').forEach(b => {
+          b.classList.remove('active', 'bg-primary', 'text-white');
+          b.classList.add('bg-secondary');
+        });
+        btn.classList.add('active', 'bg-primary', 'text-white');
+        btn.classList.remove('bg-secondary');
+        renderTrendChart(parseInt(btn.dataset.period));
+      });
+    });
+
+    document.querySelectorAll('.rec-filter').forEach(btn => {
+      btn.addEventListener('click', () => filterRecommendations(btn.dataset.filter));
+    });
+
+    document.getElementById('reportModal').addEventListener('click', (e) => {
+      if (e.target.id === 'reportModal') closeReportModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeReportModal();
+    });
+
+    // Expose functions to global scope
+    window.switchTab = switchTab;
+    window.refreshInsights = refreshInsights;
+    window.generateReport = generateReport;
+    window.closeReportModal = closeReportModal;
+    window.downloadReport = downloadReport;
+    window.autoFix = autoFix;
+    window.filterRecommendations = filterRecommendations;
+
+    // Initialize
+    renderTabContent('overview');
+  </script>
+</body>
+</html>

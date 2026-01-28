@@ -17,6 +17,47 @@ export { RuleVersioning, parseVersion, initializeVersioning, formatDiff } from '
 // Sync
 export { SyncManager, formatSyncDiff, formatConflicts } from './sync-manager.js';
 
+// Conflict Resolution
+export {
+  ConflictResolver,
+  getConflictResolver,
+  type ConflictType,
+  type ConflictInfo,
+  type MergeResult,
+  type ConflictResolverConfig,
+} from './conflict-resolver.js';
+
+// Server Sync (monol-server)
+export {
+  ServerSync,
+  getServerSync,
+  loadConfigFromEnv,
+  type ServerSyncConfig,
+  type ServerEventPayload,
+  type ServerResponse,
+  // Remote Sync Service
+  RemoteSyncService,
+  RemoteSyncError,
+  getRemoteSyncService,
+  type RemoteSyncServiceConfig,
+  type SyncProgress,
+  type SyncProgressListener,
+  type SyncEventListener,
+  type SyncEvent,
+} from './server-sync.js';
+
+// Auth
+export {
+  AuthManager,
+  AuthError,
+  getAuthManager,
+  loadAuthConfigFromEnv,
+  type AuthManagerConfig,
+  type OAuthCallbackResult,
+  type AuthEvent,
+  type AuthEventListener,
+} from './auth-manager.js';
+
 // Errors
 export {
   RulebookError,

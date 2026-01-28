@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monol Rulebook - Analytics</title>
+  <!-- Monol Design System -->
+  <link rel="stylesheet" href="../../../../monol-design/monol-design.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            background: '#0a0a0a',
+            foreground: '#fafafa',
+            card: '#171717',
+            'card-foreground': '#fafafa',
+            primary: '#f97316',
+            'primary-foreground': '#fafafa',
+            secondary: '#262626',
+            'secondary-foreground': '#fafafa',
+            muted: '#262626',
+            'muted-foreground': '#a3a3a3',
+            accent: '#262626',
+            'accent-foreground': '#fafafa',
+            border: '#262626',
+            input: '#262626',
+            ring: '#f97316',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .sidebar-item:hover { background: #262626; }
+    .sidebar-item.active { background: #262626; color: #f97316; }
+    .stat-card { transition: transform 0.2s; }
+    .stat-card:hover { transform: translateY(-2px); }
+    .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+    .bar { transition: width 0.8s ease-out; }
+    .chart-bar {
+      transition: height 0.5s ease-out;
+      cursor: pointer;
+    }
+    .chart-bar:hover { opacity: 0.8; }
+    .tag-cloud-item {
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tag-cloud-item:hover {
+      transform: scale(1.1);
+    }
+    .tag-cloud-item.active {
+      background: rgba(249, 115, 22, 0.3) !important;
+      color: #f97316 !important;
+    }
+    .contributor-row {
+      cursor: pointer;
+      transition: background 0.2s;
+      border-radius: 8px;
+      padding: 8px;
+      margin: -8px;
+    }
+    .contributor-row:hover {
+      background: rgba(255,255,255,0.05);
+    }
+    .activity-item {
+      animation: fadeIn 0.3s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes countUp {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .animate-pulse { animation: pulse 2s infinite; }
+    @keyframes toastSlide {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    .toast { animation: toastSlide 0.3s ease-out; }
+    .period-btn.active {
+      background: #f97316;
+      color: white;
+    }
+    .export-dropdown {
+      display: none;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: 4px;
+      background: #171717;
+      border: 1px solid #262626;
+      border-radius: 8px;
+      padding: 4px;
+      z-index: 50;
+      min-width: 150px;
+    }
+    .export-dropdown.show { display: block; }
+    .export-item {
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .export-item:hover { background: #262626; }
+  </style>
+</head>
+<body class="bg-background text-foreground min-h-screen">
+  <div class="flex h-screen">
+    <!-- Sidebar -->
+    <aside class="w-64 border-r border-border flex flex-col">
+      <!-- Logo -->
+      <div class="p-4 border-b border-border">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold">R</div>
+          <span class="font-semibold">Rulebook</span>
+        </div>
+        <!-- Team Selector -->
+        <button class="mt-3 w-full flex items-center justify-between px-3 py-2 bg-secondary rounded-lg text-sm">
+          <span>Frontend Team</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="flex-1 p-2">
+        <a href="index.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
+          홈
+        </a>
+        <a href="rules.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          규칙
+        </a>
+        <a href="proposals.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          </svg>
+          제안
+          <span class="ml-auto bg-primary text-xs px-2 py-0.5 rounded-full">3</span>
+        </a>
+        <a href="marketplace.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+          </svg>
+          마켓플레이스
+        </a>
+        <a href="analytics.html" class="sidebar-item active flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+          분석
+        </a>
+        <a href="insights.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+          </svg>
+          AI 인사이트
+          <span class="ml-auto text-xs px-2 py-0.5 rounded-full text-white" style="background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);">AI</span>
+        </a>
+
+        <div class="mt-4 pt-4 border-t border-border">
+          <a href="#" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            설정
+          </a>
+        </div>
+      </nav>
+
+      <!-- User -->
+      <div class="p-4 border-t border-border">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-sm font-medium">K</div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium truncate">Kent</p>
+            <p class="text-xs text-muted-foreground truncate">Admin</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto">
+      <div class="p-6">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h1 class="text-2xl font-semibold mb-1">분석 콘솔</h1>
+            <p class="text-muted-foreground">팀의 규칙 활용 현황을 분석합니다</p>
+          </div>
+          <div class="flex gap-2">
+            <!-- Period Selector -->
+            <div class="flex bg-card border border-border rounded-lg p-1">
+              <button class="period-btn px-3 py-1.5 rounded text-sm" data-period="7">7일</button>
+              <button class="period-btn active px-3 py-1.5 rounded text-sm" data-period="30">30일</button>
+              <button class="period-btn px-3 py-1.5 rounded text-sm" data-period="90">90일</button>
+              <button class="period-btn px-3 py-1.5 rounded text-sm" data-period="all">전체</button>
+            </div>
+            <!-- Export Button -->
+            <div class="relative">
+              <button id="exportBtn" class="px-4 py-2 bg-secondary text-muted-foreground rounded-lg text-sm hover:bg-secondary/80 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                </svg>
+                내보내기
+              </button>
+              <div id="exportDropdown" class="export-dropdown">
+                <div class="export-item" onclick="exportData('csv')">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                  </svg>
+                  CSV
+                </div>
+                <div class="export-item" onclick="exportData('json')">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a2 2 0 01-2-2v-6a2 2 0 012-2h8z"/>
+                  </svg>
+                  JSON
+                </div>
+                <div class="export-item" onclick="exportData('pdf')">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                  </svg>
+                  PDF 리포트
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats Overview -->
+        <div id="statsGrid" class="grid grid-cols-4 gap-4 mb-6">
+          <!-- Stats will be rendered by JavaScript -->
+        </div>
+
+        <div class="grid grid-cols-3 gap-6 mb-6">
+          <!-- Severity Distribution -->
+          <div class="bg-card border border-border rounded-lg p-4">
+            <h3 class="font-medium mb-4">심각도별 분포</h3>
+            <div id="severityChart" class="space-y-4">
+              <!-- Rendered by JavaScript -->
+            </div>
+          </div>
+
+          <!-- Category Distribution -->
+          <div class="bg-card border border-border rounded-lg p-4">
+            <h3 class="font-medium mb-4">카테고리별 분포</h3>
+            <div id="categoryChart" class="space-y-4">
+              <!-- Rendered by JavaScript -->
+            </div>
+          </div>
+
+          <!-- Tag Cloud -->
+          <div class="bg-card border border-border rounded-lg p-4">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-medium">인기 태그</h3>
+              <button id="clearTagFilter" class="text-xs text-primary hidden hover:underline">필터 해제</button>
+            </div>
+            <div id="tagCloud" class="flex flex-wrap gap-2">
+              <!-- Rendered by JavaScript -->
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-6 mb-6">
+          <!-- Activity Chart -->
+          <div class="bg-card border border-border rounded-lg p-4">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-medium">주간 활동</h3>
+              <div class="flex gap-2">
+                <button class="chart-type-btn active text-xs px-2 py-1 rounded" data-type="bar">막대</button>
+                <button class="chart-type-btn text-xs px-2 py-1 rounded bg-secondary" data-type="line">라인</button>
+              </div>
+            </div>
+            <div id="activityChart" class="flex items-end justify-between h-40 px-4">
+              <!-- Rendered by JavaScript -->
+            </div>
+            <div class="flex justify-center gap-6 mt-4 text-sm">
+              <span class="flex items-center gap-2 cursor-pointer hover:opacity-70" onclick="toggleLegend('create')">
+                <span class="w-3 h-3 bg-primary rounded legend-dot" data-legend="create"></span>
+                생성/수정
+              </span>
+              <span class="flex items-center gap-2 cursor-pointer hover:opacity-70" onclick="toggleLegend('approve')">
+                <span class="w-3 h-3 bg-green-500 rounded legend-dot" data-legend="approve"></span>
+                승인
+              </span>
+              <span class="flex items-center gap-2 cursor-pointer hover:opacity-70" onclick="toggleLegend('adopt')">
+                <span class="w-3 h-3 bg-blue-500 rounded legend-dot" data-legend="adopt"></span>
+                채택
+              </span>
+            </div>
+          </div>
+
+          <!-- Top Contributors -->
+          <div class="bg-card border border-border rounded-lg p-4">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-medium">기여자 순위</h3>
+              <select id="contributorSort" class="text-xs bg-secondary border-none rounded px-2 py-1">
+                <option value="points">포인트순</option>
+                <option value="rules">규칙순</option>
+                <option value="reviews">리뷰순</option>
+              </select>
+            </div>
+            <div id="contributorList" class="space-y-3">
+              <!-- Rendered by JavaScript -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity Timeline -->
+        <div class="bg-card border border-border rounded-lg p-4">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-medium">최근 활동</h3>
+            <div class="flex gap-2">
+              <button class="activity-filter active text-xs px-2 py-1 rounded bg-primary" data-filter="all">전체</button>
+              <button class="activity-filter text-xs px-2 py-1 rounded bg-secondary" data-filter="create">생성</button>
+              <button class="activity-filter text-xs px-2 py-1 rounded bg-secondary" data-filter="approve">승인</button>
+              <button class="activity-filter text-xs px-2 py-1 rounded bg-secondary" data-filter="adopt">채택</button>
+            </div>
+          </div>
+          <div id="activityTimeline" class="space-y-4">
+            <!-- Rendered by JavaScript -->
+          </div>
+          <button id="loadMoreBtn" class="w-full mt-4 py-2 text-sm text-muted-foreground hover:text-foreground border border-border rounded-lg hover:bg-secondary/50 transition">
+            더 보기
+          </button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Contributor Modal -->
+  <div id="contributorModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+    <div class="bg-card border border-border rounded-xl w-full max-w-md mx-4 overflow-hidden">
+      <div class="p-6">
+        <div class="flex items-center gap-4 mb-6">
+          <div id="modalAvatar" class="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold"></div>
+          <div>
+            <h3 id="modalName" class="text-xl font-semibold"></h3>
+            <p id="modalRole" class="text-muted-foreground"></p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-4 mb-6">
+          <div class="text-center p-3 bg-secondary/50 rounded-lg">
+            <p id="modalRules" class="text-2xl font-bold text-primary"></p>
+            <p class="text-xs text-muted-foreground">규칙</p>
+          </div>
+          <div class="text-center p-3 bg-secondary/50 rounded-lg">
+            <p id="modalReviews" class="text-2xl font-bold text-green-500"></p>
+            <p class="text-xs text-muted-foreground">리뷰</p>
+          </div>
+          <div class="text-center p-3 bg-secondary/50 rounded-lg">
+            <p id="modalPoints" class="text-2xl font-bold text-blue-500"></p>
+            <p class="text-xs text-muted-foreground">포인트</p>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <h4 class="text-sm font-medium mb-2">최근 활동</h4>
+          <div id="modalActivity" class="space-y-2 text-sm">
+            <!-- Rendered by JavaScript -->
+          </div>
+        </div>
+
+        <div class="flex gap-2">
+          <button onclick="closeContributorModal()" class="flex-1 py-2 bg-secondary rounded-lg text-sm hover:bg-secondary/80">
+            닫기
+          </button>
+          <button class="flex-1 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary/90">
+            프로필 보기
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+
+  <script type="module">
+    // API Configuration
+    const API_BASE = 'http://localhost:3001/api';
+    const TEAM_ID = '1';
+
+    // API Helper
+    async function api(endpoint, options = {}) {
+      try {
+        const response = await fetch(`${API_BASE}${endpoint}`, {
+          headers: { 'Content-Type': 'application/json', ...options.headers },
+          ...options
+        });
+        const data = await response.json();
+        if (!data.success) throw new Error(data.error?.message || 'API Error');
+        return data;
+      } catch (error) {
+        console.error('API Error:', error);
+        throw error;
+      }
+    }
+
+    // State
+    let currentPeriod = 30;
+    let selectedTag = null;
+    let activityFilter = 'all';
+    let activityPage = 1;
+    let chartLegends = { create: true, approve: true, adopt: true };
+    let analyticsData = {};
+    let tags = [];
+    let contributors = [];
+    let activities = [];
+
+    // Load analytics data from API
+    async function loadAnalyticsData() {
+      try {
+        const [overviewRes, tagsRes, contributorsRes, activityRes] = await Promise.all([
+          api(`/teams/${TEAM_ID}/analytics/overview?period=${currentPeriod}`),
+          api(`/teams/${TEAM_ID}/analytics/tags`),
+          api(`/teams/${TEAM_ID}/analytics/contributors`),
+          api(`/teams/${TEAM_ID}/analytics/activity?limit=8`)
+        ]);
+
+        // Update analytics data for current period
+        if (overviewRes.data) {
+          analyticsData[currentPeriod] = overviewRes.data;
+        }
+
+        tags = tagsRes.data.length > 0 ? tagsRes.data : mockTags;
+        contributors = contributorsRes.data.length > 0 ? contributorsRes.data : mockContributors;
+        activities = activityRes.data.length > 0 ? activityRes.data.map(a => ({
+          ...a,
+          initial: a.user?.name?.[0] || 'U',
+          color: getColorForUser(a.user?.name || 'Unknown'),
+          user: a.user?.name || 'Unknown'
+        })) : mockActivities;
+
+        renderAll();
+      } catch (error) {
+        showToast('데이터 로드 실패: ' + error.message, 'error');
+        // Use mock data as fallback
+        analyticsData = mockAnalyticsData;
+        tags = mockTags;
+        contributors = mockContributors;
+        activities = mockActivities;
+        renderAll();
+      }
+    }
+
+    function getColorForUser(name) {
+      const colors = ['bg-green-600', 'bg-blue-600', 'bg-purple-600', 'bg-pink-600', 'bg-cyan-600'];
+      const idx = name.charCodeAt(0) % colors.length;
+      return colors[idx];
+    }
+
+    function renderAll() {
+      renderStats();
+      renderSeverityChart();
+      renderCategoryChart();
+      renderTagCloud();
+      renderActivityChart();
+      renderContributors();
+      renderActivityTimeline();
+    }
+
+    // Mock fallback data
+    const mockAnalyticsData = {
+      7: {
+        stats: {
+          totalRules: 42, totalChange: '+3%',
+          activeRules: 38, activeChange: '+2%',
+          pendingProposals: 3, pendingChange: '-',
+          contributors: 8, contributorsChange: '+1'
+        },
+        severity: { error: 12, warning: 22, info: 8 },
+        categories: [
+          { name: 'Code Style', count: 15 },
+          { name: 'Security', count: 10 },
+          { name: 'Performance', count: 8 },
+          { name: 'Testing', count: 6 },
+          { name: '기타', count: 3 }
+        ],
+        weeklyActivity: [
+          { day: '월', create: 5, approve: 3, adopt: 2 },
+          { day: '화', create: 8, approve: 4, adopt: 1 },
+          { day: '수', create: 3, approve: 2, adopt: 3 },
+          { day: '목', create: 9, approve: 6, adopt: 2 },
+          { day: '금', create: 6, approve: 4, adopt: 4 },
+          { day: '토', create: 2, approve: 1, adopt: 0 },
+          { day: '일', create: 1, approve: 0, adopt: 1 }
+        ]
+      },
+      30: {
+        stats: {
+          totalRules: 42, totalChange: '+12%',
+          activeRules: 38, activeChange: '+5%',
+          pendingProposals: 3, pendingChange: '-',
+          contributors: 8, contributorsChange: '+2'
+        },
+        severity: { error: 12, warning: 22, info: 8 },
+        categories: [
+          { name: 'Code Style', count: 15 },
+          { name: 'Security', count: 10 },
+          { name: 'Performance', count: 8 },
+          { name: 'Testing', count: 6 },
+          { name: '기타', count: 3 }
+        ],
+        weeklyActivity: [
+          { day: '월', create: 12, approve: 8, adopt: 5 },
+          { day: '화', create: 18, approve: 10, adopt: 4 },
+          { day: '수', create: 8, approve: 6, adopt: 7 },
+          { day: '목', create: 22, approve: 15, adopt: 6 },
+          { day: '금', create: 15, approve: 9, adopt: 8 },
+          { day: '토', create: 5, approve: 2, adopt: 1 },
+          { day: '일', create: 3, approve: 1, adopt: 2 }
+        ]
+      },
+      90: {
+        stats: {
+          totalRules: 42, totalChange: '+28%',
+          activeRules: 38, activeChange: '+15%',
+          pendingProposals: 3, pendingChange: '-',
+          contributors: 8, contributorsChange: '+4'
+        },
+        severity: { error: 12, warning: 22, info: 8 },
+        categories: [
+          { name: 'Code Style', count: 15 },
+          { name: 'Security', count: 10 },
+          { name: 'Performance', count: 8 },
+          { name: 'Testing', count: 6 },
+          { name: '기타', count: 3 }
+        ],
+        weeklyActivity: [
+          { day: '월', create: 35, approve: 22, adopt: 12 },
+          { day: '화', create: 48, approve: 28, adopt: 15 },
+          { day: '수', create: 25, approve: 18, adopt: 20 },
+          { day: '목', create: 55, approve: 38, adopt: 18 },
+          { day: '금', create: 42, approve: 25, adopt: 22 },
+          { day: '토', create: 12, approve: 5, adopt: 3 },
+          { day: '일', create: 8, approve: 3, adopt: 5 }
+        ]
+      },
+      all: {
+        stats: {
+          totalRules: 42, totalChange: '+156%',
+          activeRules: 38, activeChange: '+89%',
+          pendingProposals: 3, pendingChange: '-',
+          contributors: 8, contributorsChange: '+8'
+        },
+        severity: { error: 12, warning: 22, info: 8 },
+        categories: [
+          { name: 'Code Style', count: 15 },
+          { name: 'Security', count: 10 },
+          { name: 'Performance', count: 8 },
+          { name: 'Testing', count: 6 },
+          { name: '기타', count: 3 }
+        ],
+        weeklyActivity: [
+          { day: '1월', create: 85, approve: 52, adopt: 32 },
+          { day: '2월', create: 98, approve: 68, adopt: 45 },
+          { day: '3월', create: 75, approve: 48, adopt: 50 },
+          { day: '4월', create: 115, approve: 78, adopt: 48 },
+          { day: '5월', create: 92, approve: 65, adopt: 52 },
+          { day: '6월', create: 42, approve: 25, adopt: 18 },
+          { day: '7월', create: 28, approve: 13, adopt: 15 }
+        ]
+      }
+    };
+
+    const mockTags = [
+      { name: 'naming', count: 18, size: 'lg' },
+      { name: 'style', count: 15, size: 'base' },
+      { name: 'security', count: 14, size: 'base' },
+      { name: 'error-handling', count: 10, size: 'sm' },
+      { name: 'api', count: 9, size: 'sm' },
+      { name: 'testing', count: 8, size: 'sm' },
+      { name: 'react', count: 7, size: 'sm' },
+      { name: 'typescript', count: 6, size: 'xs' },
+      { name: 'performance', count: 5, size: 'xs' },
+      { name: 'docs', count: 4, size: 'xs' }
+    ];
+
+    const mockContributors = [
+      { id: 1, name: 'Kent', initial: 'K', color: 'bg-green-600', rules: 15, reviews: 23, points: 152, role: 'Admin' },
+      { id: 2, name: 'Jason', initial: 'J', color: 'bg-blue-600', rules: 12, reviews: 18, points: 128, role: 'Senior Developer' },
+      { id: 3, name: 'Mike', initial: 'M', color: 'bg-purple-600', rules: 8, reviews: 15, points: 95, role: 'Developer' },
+      { id: 4, name: 'Sarah', initial: 'S', color: 'bg-pink-600', rules: 6, reviews: 12, points: 72, role: 'Developer' },
+      { id: 5, name: 'Alex', initial: 'A', color: 'bg-cyan-600', rules: 4, reviews: 8, points: 48, role: 'Junior Developer' }
+    ];
+
+    const mockActivities = [
+      { id: 1, user: 'Kent', initial: 'K', color: 'bg-green-600', type: 'approve', action: '규칙을 승인했습니다', time: '10분 전', detail: '<span class="text-primary">API 에러 핸들링 규칙 강화</span> 제안을 승인했습니다. "좋은 제안입니다. 에러 핸들링 일관성은 매우 중요하죠."' },
+      { id: 2, user: 'Jason', initial: 'J', color: 'bg-blue-600', type: 'create', action: '새 제안을 생성했습니다', time: '2시간 전', detail: '<span class="tag bg-yellow-500/20 text-yellow-400 mr-2">update</span><span class="text-primary">error-handling-001</span> 규칙 업데이트 제안' },
+      { id: 3, user: 'Mike', initial: 'M', color: 'bg-purple-600', type: 'adopt', action: '규칙을 채택했습니다', time: '1일 전', detail: '마켓플레이스에서 <span class="text-primary">SQL Injection 방지 규칙</span>을 채택했습니다.' },
+      { id: 4, user: 'Sarah', initial: 'S', color: 'bg-pink-600', type: 'create', action: '새 규칙을 생성했습니다', time: '2일 전', detail: '<span class="tag bg-green-500/20 text-green-400 mr-2">create</span><span class="text-primary">accessibility-001</span> 접근성 체크리스트 규칙' },
+      { id: 5, user: 'Alex', initial: 'A', color: 'bg-cyan-600', type: 'approve', action: '리뷰를 완료했습니다', time: '3일 전', detail: '<span class="text-primary">performance-cache-001</span> 규칙에 대한 리뷰를 완료했습니다.' },
+      { id: 6, user: 'Kent', initial: 'K', color: 'bg-green-600', type: 'create', action: '새 규칙을 생성했습니다', time: '4일 전', detail: '<span class="tag bg-green-500/20 text-green-400 mr-2">create</span><span class="text-primary">logging-format-001</span> 로깅 형식 표준화 규칙' },
+      { id: 7, user: 'Jason', initial: 'J', color: 'bg-blue-600', type: 'adopt', action: '컬렉션을 채택했습니다', time: '5일 전', detail: '마켓플레이스에서 <span class="text-primary">React Best Practices</span> 컬렉션을 채택했습니다.' },
+      { id: 8, user: 'Mike', initial: 'M', color: 'bg-purple-600', type: 'approve', action: '규칙을 승인했습니다', time: '6일 전', detail: '<span class="text-primary">naming-variable-001</span> 규칙 수정안을 승인했습니다.' }
+    ];
+
+    // Render Functions
+    function renderStats() {
+      const data = analyticsData[currentPeriod].stats;
+      const grid = document.getElementById('statsGrid');
+
+      grid.innerHTML = `
+        <div class="stat-card bg-card border border-border rounded-lg p-4">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm text-muted-foreground">전체 규칙</span>
+            <span class="text-xs ${data.totalChange.startsWith('+') ? 'text-green-400' : 'text-muted-foreground'}">${data.totalChange}</span>
+          </div>
+          <p class="text-2xl font-semibold stat-number" data-target="${data.totalRules}">0</p>
+          <p class="text-xs text-muted-foreground mt-1">지난 기간 대비</p>
+        </div>
+        <div class="stat-card bg-card border border-border rounded-lg p-4">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm text-muted-foreground">활성 규칙</span>
+            <span class="text-xs ${data.activeChange.startsWith('+') ? 'text-green-400' : 'text-muted-foreground'}">${data.activeChange}</span>
+          </div>
+          <p class="text-2xl font-semibold stat-number" data-target="${data.activeRules}">0</p>
+          <p class="text-xs text-muted-foreground mt-1">적용률 ${Math.round(data.activeRules / data.totalRules * 100)}%</p>
+        </div>
+        <div class="stat-card bg-card border border-border rounded-lg p-4">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm text-muted-foreground">대기 중 제안</span>
+            <span class="text-xs text-yellow-400">${data.pendingChange}</span>
+          </div>
+          <p class="text-2xl font-semibold stat-number" data-target="${data.pendingProposals}">0</p>
+          <p class="text-xs text-muted-foreground mt-1">평균 승인 2.3일</p>
+        </div>
+        <div class="stat-card bg-card border border-border rounded-lg p-4">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm text-muted-foreground">팀 기여자</span>
+            <span class="text-xs text-green-400">${data.contributorsChange}</span>
+          </div>
+          <p class="text-2xl font-semibold stat-number" data-target="${data.contributors}">0</p>
+          <p class="text-xs text-muted-foreground mt-1">이번 기간 신규</p>
+        </div>
+      `;
+
+      // Animate numbers
+      setTimeout(() => {
+        document.querySelectorAll('.stat-number').forEach(el => {
+          animateNumber(el, parseInt(el.dataset.target));
+        });
+      }, 100);
+    }
+
+    function animateNumber(el, target) {
+      const duration = 1000;
+      const start = 0;
+      const startTime = performance.now();
+
+      function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.round(start + (target - start) * eased);
+
+        if (progress < 1) {
+          requestAnimationFrame(update);
+        }
+      }
+      requestAnimationFrame(update);
+    }
+
+    function renderSeverityChart() {
+      const data = analyticsData[currentPeriod].severity;
+      const total = data.error + data.warning + data.info;
+      const chart = document.getElementById('severityChart');
+
+      chart.innerHTML = `
+        <div>
+          <div class="flex justify-between text-sm mb-1">
+            <span class="flex items-center gap-2">
+              <span class="w-3 h-3 bg-red-500 rounded"></span>
+              Error
+            </span>
+            <span>${data.error}개 (${Math.round(data.error / total * 100)}%)</span>
+          </div>
+          <div class="h-2 bg-secondary rounded-full overflow-hidden">
+            <div class="bar h-full bg-red-500 rounded-full" style="width: 0%" data-width="${data.error / total * 100}%"></div>
+          </div>
+        </div>
+        <div>
+          <div class="flex justify-between text-sm mb-1">
+            <span class="flex items-center gap-2">
+              <span class="w-3 h-3 bg-yellow-500 rounded"></span>
+              Warning
+            </span>
+            <span>${data.warning}개 (${Math.round(data.warning / total * 100)}%)</span>
+          </div>
+          <div class="h-2 bg-secondary rounded-full overflow-hidden">
+            <div class="bar h-full bg-yellow-500 rounded-full" style="width: 0%" data-width="${data.warning / total * 100}%"></div>
+          </div>
+        </div>
+        <div>
+          <div class="flex justify-between text-sm mb-1">
+            <span class="flex items-center gap-2">
+              <span class="w-3 h-3 bg-blue-500 rounded"></span>
+              Info
+            </span>
+            <span>${data.info}개 (${Math.round(data.info / total * 100)}%)</span>
+          </div>
+          <div class="h-2 bg-secondary rounded-full overflow-hidden">
+            <div class="bar h-full bg-blue-500 rounded-full" style="width: 0%" data-width="${data.info / total * 100}%"></div>
+          </div>
+        </div>
+      `;
+
+      setTimeout(() => {
+        chart.querySelectorAll('.bar').forEach(bar => {
+          bar.style.width = bar.dataset.width;
+        });
+      }, 100);
+    }
+
+    function renderCategoryChart() {
+      const data = analyticsData[currentPeriod].categories;
+      const total = data.reduce((sum, c) => sum + c.count, 0);
+      const chart = document.getElementById('categoryChart');
+
+      chart.innerHTML = data.map(cat => `
+        <div>
+          <div class="flex justify-between text-sm mb-1">
+            <span>${cat.name}</span>
+            <span>${cat.count}개</span>
+          </div>
+          <div class="h-2 bg-secondary rounded-full overflow-hidden">
+            <div class="bar h-full bg-primary rounded-full" style="width: 0%" data-width="${cat.count / total * 100}%"></div>
+          </div>
+        </div>
+      `).join('');
+
+      setTimeout(() => {
+        chart.querySelectorAll('.bar').forEach(bar => {
+          bar.style.width = bar.dataset.width;
+        });
+      }, 100);
+    }
+
+    function renderTagCloud() {
+      const cloud = document.getElementById('tagCloud');
+      const sizeClasses = {
+        lg: 'px-3 py-1.5 text-lg font-medium',
+        base: 'px-3 py-1.5 text-base',
+        sm: 'px-2 py-1 text-sm',
+        xs: 'px-2 py-1 text-xs text-muted-foreground'
+      };
+
+      cloud.innerHTML = tags.map(tag => {
+        const isActive = selectedTag === tag.name;
+        const bgClass = isActive ? 'bg-primary/30 text-primary' : (tag.size === 'lg' ? 'bg-primary/20 text-primary' : 'bg-secondary');
+        return `
+          <span class="tag-cloud-item ${sizeClasses[tag.size]} ${bgClass} rounded-full cursor-pointer ${isActive ? 'active' : ''}"
+                data-tag="${tag.name}" onclick="filterByTag('${tag.name}')">
+            ${tag.name}
+            <span class="text-muted-foreground ml-1">${tag.count}</span>
+          </span>
+        `;
+      }).join('');
+
+      document.getElementById('clearTagFilter').classList.toggle('hidden', !selectedTag);
+    }
+
+    function filterByTag(tagName) {
+      if (selectedTag === tagName) {
+        selectedTag = null;
+      } else {
+        selectedTag = tagName;
+        showToast(`'${tagName}' 태그로 필터링됨`, 'info');
+      }
+      renderTagCloud();
+    }
+
+    function renderActivityChart() {
+      const data = analyticsData[currentPeriod].weeklyActivity;
+      const chart = document.getElementById('activityChart');
+
+      const maxValue = Math.max(...data.flatMap(d => [
+        chartLegends.create ? d.create : 0,
+        chartLegends.approve ? d.approve : 0,
+        chartLegends.adopt ? d.adopt : 0
+      ]));
+
+      chart.innerHTML = data.map(day => {
+        const createHeight = chartLegends.create ? (day.create / maxValue * 100) : 0;
+        const approveHeight = chartLegends.approve ? (day.approve / maxValue * 100) : 0;
+        const adoptHeight = chartLegends.adopt ? (day.adopt / maxValue * 100) : 0;
+        const totalHeight = Math.max(createHeight, approveHeight, adoptHeight);
+
+        return `
+          <div class="flex flex-col items-center gap-2">
+            <div class="relative w-8 h-32 flex items-end justify-center gap-0.5" onclick="showDayDetail('${day.day}', ${day.create}, ${day.approve}, ${day.adopt})">
+              ${chartLegends.create ? `<div class="chart-bar w-2 bg-primary rounded-t" style="height: 0%" data-height="${createHeight}%" title="생성: ${day.create}"></div>` : ''}
+              ${chartLegends.approve ? `<div class="chart-bar w-2 bg-green-500 rounded-t" style="height: 0%" data-height="${approveHeight}%" title="승인: ${day.approve}"></div>` : ''}
+              ${chartLegends.adopt ? `<div class="chart-bar w-2 bg-blue-500 rounded-t" style="height: 0%" data-height="${adoptHeight}%" title="채택: ${day.adopt}"></div>` : ''}
+            </div>
+            <span class="text-xs text-muted-foreground">${day.day}</span>
+          </div>
+        `;
+      }).join('');
+
+      setTimeout(() => {
+        chart.querySelectorAll('.chart-bar').forEach((bar, i) => {
+          setTimeout(() => {
+            bar.style.height = bar.dataset.height;
+          }, i * 50);
+        });
+      }, 100);
+    }
+
+    function toggleLegend(type) {
+      chartLegends[type] = !chartLegends[type];
+      document.querySelectorAll(`.legend-dot[data-legend="${type}"]`).forEach(dot => {
+        dot.style.opacity = chartLegends[type] ? 1 : 0.3;
+      });
+      renderActivityChart();
+    }
+
+    function showDayDetail(day, create, approve, adopt) {
+      showToast(`${day}: 생성 ${create}, 승인 ${approve}, 채택 ${adopt}`, 'info');
+    }
+
+    function renderContributors() {
+      const sortBy = document.getElementById('contributorSort').value;
+      const sorted = [...contributors].sort((a, b) => b[sortBy] - a[sortBy]);
+      const list = document.getElementById('contributorList');
+
+      list.innerHTML = sorted.map((c, i) => `
+        <div class="contributor-row flex items-center gap-3" onclick="openContributorModal(${c.id})">
+          <span class="text-lg font-bold ${i === 0 ? 'text-primary' : 'text-muted-foreground'} w-6">${i + 1}</span>
+          <div class="w-10 h-10 ${c.color} rounded-full flex items-center justify-center">${c.initial}</div>
+          <div class="flex-1">
+            <p class="font-medium">${c.name}</p>
+            <p class="text-xs text-muted-foreground">규칙 ${c.rules}개 · 리뷰 ${c.reviews}개</p>
+          </div>
+          <div class="text-right">
+            <p class="font-semibold ${i === 0 ? 'text-primary' : ''}">${c.points}</p>
+            <p class="text-xs text-muted-foreground">포인트</p>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderActivityTimeline() {
+      const filtered = activityFilter === 'all'
+        ? activities
+        : activities.filter(a => a.type === activityFilter);
+
+      const toShow = filtered.slice(0, activityPage * 4);
+      const timeline = document.getElementById('activityTimeline');
+
+      timeline.innerHTML = toShow.map((a, i) => `
+        <div class="activity-item flex gap-4" style="animation-delay: ${i * 0.1}s">
+          <div class="flex flex-col items-center">
+            <div class="w-10 h-10 ${a.color} rounded-full flex items-center justify-center text-sm">${a.initial}</div>
+            ${i < toShow.length - 1 ? '<div class="w-0.5 h-full bg-border mt-2"></div>' : ''}
+          </div>
+          <div class="flex-1 ${i < toShow.length - 1 ? 'pb-4' : ''}">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="font-medium">${a.user}</span>
+              <span class="text-muted-foreground text-sm">${a.action}</span>
+              <span class="text-xs text-muted-foreground">${a.time}</span>
+            </div>
+            <div class="bg-secondary/50 rounded-lg p-3 text-sm">
+              ${a.detail}
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      document.getElementById('loadMoreBtn').classList.toggle('hidden', toShow.length >= filtered.length);
+    }
+
+    function openContributorModal(id) {
+      const c = contributors.find(c => c.id === id);
+      if (!c) return;
+
+      document.getElementById('modalAvatar').className = `w-16 h-16 ${c.color} rounded-full flex items-center justify-center text-2xl font-bold`;
+      document.getElementById('modalAvatar').textContent = c.initial;
+      document.getElementById('modalName').textContent = c.name;
+      document.getElementById('modalRole').textContent = c.role;
+      document.getElementById('modalRules').textContent = c.rules;
+      document.getElementById('modalReviews').textContent = c.reviews;
+      document.getElementById('modalPoints').textContent = c.points;
+
+      const userActivities = activities.filter(a => a.user === c.name).slice(0, 3);
+      document.getElementById('modalActivity').innerHTML = userActivities.map(a => `
+        <div class="flex items-center gap-2 text-muted-foreground">
+          <span class="w-2 h-2 rounded-full ${a.type === 'create' ? 'bg-green-500' : a.type === 'approve' ? 'bg-primary' : 'bg-blue-500'}"></span>
+          ${a.action} · ${a.time}
+        </div>
+      `).join('');
+
+      document.getElementById('contributorModal').classList.remove('hidden');
+    }
+
+    function closeContributorModal() {
+      document.getElementById('contributorModal').classList.add('hidden');
+    }
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const colors = {
+        success: 'bg-green-600',
+        error: 'bg-red-600',
+        info: 'bg-blue-600'
+      };
+
+      const toast = document.createElement('div');
+      toast.className = `toast ${colors[type]} text-white px-4 py-2 rounded-lg shadow-lg text-sm flex items-center gap-2`;
+      toast.innerHTML = `
+        ${type === 'success' ? '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>' : ''}
+        ${type === 'info' ? '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' : ''}
+        ${message}
+      `;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        toast.style.transition = 'all 0.3s';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    function exportData(format) {
+      document.getElementById('exportDropdown').classList.remove('show');
+
+      const formatNames = { csv: 'CSV', json: 'JSON', pdf: 'PDF 리포트' };
+      showToast(`${formatNames[format]} 파일 다운로드 시작...`, 'info');
+
+      setTimeout(() => {
+        showToast(`analytics_${currentPeriod}days.${format} 다운로드 완료`, 'success');
+      }, 1500);
+    }
+
+    // Event Listeners
+    document.querySelectorAll('.period-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentPeriod = btn.dataset.period === 'all' ? 'all' : parseInt(btn.dataset.period);
+
+        // Fetch new data from API for the selected period
+        try {
+          const response = await api(`/teams/${TEAM_ID}/analytics/overview?period=${currentPeriod}`);
+          if (response.data) {
+            analyticsData[currentPeriod] = response.data;
+          }
+        } catch (error) {
+          // Use mock data if API fails
+          if (!analyticsData[currentPeriod]) {
+            analyticsData[currentPeriod] = mockAnalyticsData[currentPeriod];
+          }
+        }
+
+        renderStats();
+        renderSeverityChart();
+        renderCategoryChart();
+        renderActivityChart();
+
+        showToast(`${btn.textContent} 기간으로 변경됨`, 'info');
+      });
+    });
+
+    document.getElementById('exportBtn').addEventListener('click', () => {
+      document.getElementById('exportDropdown').classList.toggle('show');
+    });
+
+    document.getElementById('clearTagFilter').addEventListener('click', () => {
+      selectedTag = null;
+      renderTagCloud();
+      showToast('태그 필터 해제됨', 'info');
+    });
+
+    document.getElementById('contributorSort').addEventListener('change', renderContributors);
+
+    document.querySelectorAll('.activity-filter').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.activity-filter').forEach(b => {
+          b.classList.remove('active', 'bg-primary');
+          b.classList.add('bg-secondary');
+        });
+        btn.classList.add('active', 'bg-primary');
+        btn.classList.remove('bg-secondary');
+        activityFilter = btn.dataset.filter;
+        activityPage = 1;
+        renderActivityTimeline();
+      });
+    });
+
+    document.getElementById('loadMoreBtn').addEventListener('click', () => {
+      activityPage++;
+      renderActivityTimeline();
+    });
+
+    document.getElementById('contributorModal').addEventListener('click', (e) => {
+      if (e.target.id === 'contributorModal') {
+        closeContributorModal();
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#exportBtn') && !e.target.closest('#exportDropdown')) {
+        document.getElementById('exportDropdown').classList.remove('show');
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeContributorModal();
+        document.getElementById('exportDropdown').classList.remove('show');
+      }
+    });
+
+    // Expose functions to global scope for onclick handlers
+    window.filterByTag = filterByTag;
+    window.toggleLegend = toggleLegend;
+    window.showDayDetail = showDayDetail;
+    window.openContributorModal = openContributorModal;
+    window.closeContributorModal = closeContributorModal;
+    window.exportData = exportData;
+
+    // Initialize
+    function init() {
+      loadAnalyticsData();
+    }
+
+    init();
+  </script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 ---
-command: rule-sync
+name: rule-sync
 description: 플랫폼 규칙 양방향 동기화
 args: "<platform> [--push | --pull | --diff] [--dry-run] [--force]"
 examples:

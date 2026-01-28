@@ -12,6 +12,8 @@ export { RuleSearch, quickSearchByTags, quickSearchByCategory, groupRulesByCateg
 export { RuleVersioning, parseVersion, initializeVersioning, formatDiff } from './rule-versioning.js';
 // Sync
 export { SyncManager, formatSyncDiff, formatConflicts } from './sync-manager.js';
+// Server Sync (monol-server)
+export { ServerSync, getServerSync, loadConfigFromEnv, } from './server-sync.js';
 // Errors
 export { RulebookError, YAMLParseError, ValidationError, DependencyError, SyncError, VersionError, isRulebookError, categorizeError, formatError, } from './errors.js';
 // Adapters

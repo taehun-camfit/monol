@@ -18,7 +18,28 @@
       "Bash(chmod:*)",
       "Bash(npm run deploy:*)",
       "Bash(./scripts/install-hooks.sh)",
-      "WebFetch(domain:docs.anthropic.com)"
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(gh auth:*)",
+      "Bash(ssh:*)",
+      "Bash(gh repo create:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git rm:*)",
+      "Bash(npm whoami:*)",
+      "Bash(npm publish:*)",
+      "Bash(npm config set:*)",
+      "Bash(npm config:*)",
+      "Bash(npm cache clean:*)",
+      "Bash(monol-rulebook:*)",
+      "Bash(git push:*)",
+      "Bash(npm view:*)",
+      "Bash(grep version echo find /opt/homebrew/lib/node_modules/monol-rulebook -maxdepth 3 -type f \\\\\\(-name *.json -o -name *.md \\\\\\))",
+      "Bash(cat:*)",
+      "Bash(__NEW_LINE_6bd9eb0e90aa45c2__ echo \"\")",
+      "Bash(open:*)",
+      "Bash(npm start)",
+      "Bash(curl:*)",
+      "Bash(lsof:*)",
+      "Bash(ls:*)"
     ]
   }
 }

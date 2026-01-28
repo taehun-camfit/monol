@@ -1,0 +1,39 @@
+{
+  "hooks": [
+    {
+      "name": "rule-detect-on-edit",
+      "event": "Edit",
+      "description": "파일 편집 시 관련 규칙 감지",
+      "file": "rule-detect.md",
+      "enabled": true,
+      "config": {
+        "minFileSize": 100,
+        "maxSuggestions": 3,
+        "cooldownMs": 5000
+      }
+    },
+    {
+      "name": "rule-check-on-commit",
+      "event": "PreCommit",
+      "description": "커밋 전 규칙 위반 체크",
+      "file": "rule-detect.md",
+      "section": "pre-commit",
+      "enabled": true,
+      "config": {
+        "blockOnError": false,
+        "showWarnings": true
+      }
+    },
+    {
+      "name": "rule-sync-reminder",
+      "event": "SessionEnd",
+      "description": "세션 종료 시 동기화 상태 체크",
+      "file": "rule-detect.md",
+      "section": "sync-reminder",
+      "enabled": true,
+      "config": {
+        "checkInterval": "daily"
+      }
+    }
+  ]
+}

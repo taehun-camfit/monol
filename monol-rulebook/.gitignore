@@ -6,3 +6,6 @@ dist/
 # Generated files
 .cursorrules
 .claude/rules/
+
+# Local settings
+.claude/settings.local.json

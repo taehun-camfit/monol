@@ -1,5 +1,5 @@
 ---
-command: rule-search
+name: rule-search
 description: 규칙 검색
 args: "<query> [--tags <tags>] [--category <cat>] [--severity <sev>]"
 examples:

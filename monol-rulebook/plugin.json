@@ -1,70 +1,10 @@
 {
   "name": "monol-rulebook",
-  "version": "0.1.0",
+  "version": "0.1.7",
   "description": "규칙 관리 및 플랫폼 동기화 플러그인",
   "author": "Kent",
-
-  "commands": [
-    {
-      "name": "rule",
-      "description": "규칙 조회 및 관리",
-      "file": "foundations/interface/commands/rule.md"
-    },
-    {
-      "name": "rule-add",
-      "description": "대화형 규칙 추가",
-      "file": "foundations/interface/commands/rule-add.md"
-    },
-    {
-      "name": "rule-search",
-      "description": "규칙 검색",
-      "file": "foundations/interface/commands/rule-search.md"
-    },
-    {
-      "name": "rule-sync",
-      "description": "플랫폼 규칙 동기화",
-      "file": "foundations/interface/commands/rule-sync.md"
-    },
-    {
-      "name": "rule-history",
-      "description": "규칙 변경 이력 조회 및 롤백",
-      "file": "foundations/interface/commands/rule-history.md"
-    }
-  ],
-
-  "skills": [
-    {
-      "name": "rule-discovery",
-      "description": "코드 작업 중 관련 규칙 자동 발견",
-      "file": "foundations/interface/skills/rule-discovery/SKILL.md",
-      "proactive": true
-    }
-  ],
-
-  "hooks": {
-    "file": "foundations/automation/hooks/hooks.json"
-  },
-
-  "agents": [
-    {
-      "name": "rule-curator",
-      "description": "규칙 큐레이터 에이전트",
-      "file": "session-templates/rule-curator.md"
-    }
-  ],
-
-  "library": {
-    "path": "foundations/logic/lib",
-    "exports": [
-      "types",
-      "rulebook-manager",
-      "rule-search",
-      "rule-versioning",
-      "sync-manager",
-      "errors",
-      "adapters/platform-adapter",
-      "adapters/cursor-adapter",
-      "adapters/claude-adapter"
-    ]
-  }
+  "commands": "foundations/interface/commands/",
+  "skills": "foundations/interface/skills/",
+  "hooks": "foundations/automation/hooks/",
+  "agents": "session-templates/"
 }

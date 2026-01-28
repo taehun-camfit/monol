@@ -25,6 +25,7 @@ import type {
   ConflictDetail,
 } from './types.js';
 import { DependencyError, YAMLParseError } from './errors.js';
+import { getServerSync, loadConfigFromEnv } from './server-sync.js';
 
 // ============================================================================
 // Constants
@@ -136,6 +137,9 @@ export class RulebookManager {
     const fileName = `${rule.id.split('-')[0]}.yaml`;
     const filePath = path.join(dirPath, fileName);
 
+    // 신규인지 업데이트인지 확인
+    const isNew = !this.rulesCache.has(rule.id);
+
     try {
       // 디렉토리 생성
       await fs.mkdir(dirPath, { recursive: true });
@@ -149,6 +153,18 @@ export class RulebookManager {
 
       // 인덱스 업데이트
       await this.updateIndex(basePath);
+
+      // 서버 동기화 (best-effort, 실패해도 저장은 성공)
+      try {
+        const serverSync = getServerSync(loadConfigFromEnv());
+        if (isNew) {
+          await serverSync.syncRuleAdded(rule);
+        } else {
+          await serverSync.syncRuleUpdated(rule);
+        }
+      } catch {
+        // 서버 동기화 실패는 무시
+      }
 
       return {
         success: true,

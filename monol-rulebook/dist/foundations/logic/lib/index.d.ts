@@ -8,6 +8,7 @@ export { RulebookManager, generateRuleId, validateRule, createRuleTemplate } fro
 export { RuleSearch, quickSearchByTags, quickSearchByCategory, groupRulesByCategory, getRuleStats } from './rule-search.js';
 export { RuleVersioning, parseVersion, initializeVersioning, formatDiff } from './rule-versioning.js';
 export { SyncManager, formatSyncDiff, formatConflicts } from './sync-manager.js';
+export { ServerSync, getServerSync, loadConfigFromEnv, type ServerSyncConfig, type ServerEventPayload, type ServerResponse, } from './server-sync.js';
 export { RulebookError, YAMLParseError, ValidationError, DependencyError, SyncError, VersionError, isRulebookError, categorizeError, formatError, } from './errors.js';
 export { BasePlatformAdapter, getSeverityIcon, ruleToMarkdown, rulesToMarkdownDocument, ruleToDirective, rulesToDirectives, registerAdapter, getAdapter, getAvailableAdapters, } from './adapters/platform-adapter.js';
 export { CursorAdapter } from './adapters/cursor-adapter.js';

@@ -1,5 +1,5 @@
 ---
-command: rule-add
+name: rule-add
 description: 대화형 규칙 추가
 args: "[--quick] [name]"
 examples:

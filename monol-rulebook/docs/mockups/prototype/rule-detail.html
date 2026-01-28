@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>naming-variable-001 - Monol Rulebook</title>
+  <!-- Monol Design System -->
+  <link rel="stylesheet" href="../../../../monol-design/monol-design.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            background: '#0a0a0a',
+            foreground: '#fafafa',
+            card: '#171717',
+            primary: '#f97316',
+            secondary: '#262626',
+            muted: '#262626',
+            'muted-foreground': '#a3a3a3',
+            border: '#262626',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .sidebar-item:hover { background: #262626; }
+    .sidebar-item.active { background: #262626; color: #f97316; }
+    .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+    .tag:hover { transform: scale(1.05); }
+    .code-block { background: #1e1e1e; border-radius: 8px; padding: 16px; font-family: 'Monaco', 'Menlo', monospace; font-size: 13px; overflow-x: auto; }
+    .code-good { border-left: 3px solid #22c55e; }
+    .code-bad { border-left: 3px solid #ef4444; }
+    .tab-btn { position: relative; }
+    .tab-btn.active::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: #f97316; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+    }
+    @keyframes toastSlide {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    .fade-in { animation: fadeIn 0.3s ease-out; }
+    .slide-in { animation: slideIn 0.3s ease-out; }
+    .pulse { animation: pulse 0.3s ease-out; }
+    .toast-slide { animation: toastSlide 0.3s ease-out; }
+
+    .modal-backdrop {
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(4px);
+    }
+    .btn-like.liked svg { fill: currentColor; }
+    .comment-input:focus { outline: none; box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.3); }
+  </style>
+</head>
+<body class="bg-background text-foreground min-h-screen">
+  <div class="flex h-screen">
+    <!-- Sidebar -->
+    <aside class="w-64 border-r border-border flex flex-col">
+      <div class="p-4 border-b border-border">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold">R</div>
+          <span class="font-semibold">Rulebook</span>
+        </div>
+        <button class="mt-3 w-full flex items-center justify-between px-3 py-2 bg-secondary rounded-lg text-sm">
+          <span>Frontend Team</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+      </div>
+
+      <nav class="flex-1 p-2">
+        <a href="index.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
+          홈
+        </a>
+        <a href="rules.html" class="sidebar-item active flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          규칙
+        </a>
+        <a href="proposals.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          </svg>
+          제안
+          <span class="ml-auto bg-primary text-xs px-2 py-0.5 rounded-full">3</span>
+        </a>
+        <a href="marketplace.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+          </svg>
+          마켓플레이스
+        </a>
+        <a href="analytics.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+          분석
+        </a>
+        <a href="insights.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+          </svg>
+          AI 인사이트
+          <span class="ml-auto text-xs px-2 py-0.5 rounded-full text-white" style="background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);">AI</span>
+        </a>
+      </nav>
+
+      <div class="p-4 border-t border-border">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full"></div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium truncate">kent</p>
+            <p class="text-xs text-muted-foreground truncate">@kent</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-auto">
+      <!-- Header -->
+      <header class="sticky top-0 bg-background/80 backdrop-blur border-b border-border px-6 py-4 z-10">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <a href="rules.html" class="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+              </svg>
+              목록으로
+            </a>
+          </div>
+          <div class="flex items-center gap-3">
+            <button onclick="openForkModal()" class="flex items-center gap-2 px-4 py-2 bg-secondary rounded-lg text-sm hover:bg-secondary/80 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+              </svg>
+              포크
+            </button>
+            <button onclick="openEditModal()" class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary/90 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+              </svg>
+              수정 제안
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div class="p-6 max-w-4xl">
+        <!-- Rule Header -->
+        <div class="mb-8 fade-in">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-yellow-500/20 text-yellow-500 text-2xl">🟡</span>
+            <div>
+              <div class="flex items-center gap-2">
+                <h1 class="text-2xl font-bold">naming-variable-001</h1>
+                <span class="text-sm text-muted-foreground bg-secondary px-2 py-1 rounded">v1.2.0</span>
+                <span class="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">Active</span>
+              </div>
+              <p class="text-xl text-muted-foreground">변수명 규칙</p>
+            </div>
+          </div>
+
+          <!-- Meta Info -->
+          <div class="flex flex-wrap items-center gap-4 mt-4 text-sm">
+            <div class="flex items-center gap-2 px-3 py-1.5 bg-card border border-border rounded-lg">
+              <span class="text-muted-foreground">카테고리:</span>
+              <span>code/naming</span>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-1.5 bg-card border border-border rounded-lg">
+              <span class="text-muted-foreground">심각도:</span>
+              <span class="text-yellow-500">Warning</span>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-1.5 bg-card border border-border rounded-lg">
+              <span class="text-muted-foreground">작성자:</span>
+              <span>@kent</span>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-1.5 bg-card border border-border rounded-lg">
+              <span class="text-muted-foreground">채택률:</span>
+              <span class="text-green-500" id="adoptionRate">89% (8/9명)</span>
+            </div>
+          </div>
+
+          <!-- Tags -->
+          <div class="flex gap-2 mt-4" id="tagContainer">
+            <span class="tag bg-primary/20 text-primary" onclick="filterByTag('naming')">naming</span>
+            <span class="tag bg-blue-500/20 text-blue-400" onclick="filterByTag('variables')">variables</span>
+            <span class="tag bg-green-500/20 text-green-400" onclick="filterByTag('functions')">functions</span>
+            <span class="tag bg-purple-500/20 text-purple-400" onclick="filterByTag('classes')">classes</span>
+            <span class="tag bg-cyan-500/20 text-cyan-400" onclick="filterByTag('style')">style</span>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center gap-4 mt-6 pt-4 border-t border-border">
+            <button id="likeBtn" onclick="toggleLike()" class="btn-like flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/>
+              </svg>
+              <span id="likeCount">12</span>
+            </button>
+            <button onclick="scrollToComments()" class="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+              </svg>
+              <span id="commentCount">3 댓글</span>
+            </button>
+            <button onclick="openShareModal()" class="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+              </svg>
+              <span>공유</span>
+            </button>
+            <button onclick="copyRuleId()" class="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+              </svg>
+              <span>ID 복사</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="border-b border-border mb-6">
+          <div class="flex gap-6">
+            <button onclick="switchTab('content')" class="tab-btn active pb-3 text-sm font-medium" data-tab="content">
+              내용
+            </button>
+            <button onclick="switchTab('discussion')" class="tab-btn pb-3 text-sm font-medium text-muted-foreground hover:text-foreground" data-tab="discussion">
+              토론 <span class="text-xs bg-secondary px-1.5 py-0.5 rounded ml-1">3</span>
+            </button>
+            <button onclick="switchTab('history')" class="tab-btn pb-3 text-sm font-medium text-muted-foreground hover:text-foreground" data-tab="history">
+              변경 이력
+            </button>
+            <button onclick="switchTab('related')" class="tab-btn pb-3 text-sm font-medium text-muted-foreground hover:text-foreground" data-tab="related">
+              관련 규칙
+            </button>
+          </div>
+        </div>
+
+        <!-- Tab Content: Content -->
+        <div id="tab-content" class="tab-content">
+          <!-- Description -->
+          <section class="mb-8 fade-in">
+            <h2 class="text-lg font-semibold mb-4">설명</h2>
+            <div class="prose prose-invert max-w-none">
+              <p class="text-muted-foreground leading-relaxed">
+                변수명, 함수명, 클래스명에 대한 네이밍 컨벤션입니다. 일관된 코드 스타일을 유지하기 위해 다음 규칙을 따릅니다:
+              </p>
+              <ul class="mt-4 space-y-2 text-muted-foreground">
+                <li class="flex items-center gap-2">
+                  <span class="w-2 h-2 bg-primary rounded-full"></span>
+                  <strong class="text-foreground">변수/함수:</strong> camelCase
+                </li>
+                <li class="flex items-center gap-2">
+                  <span class="w-2 h-2 bg-primary rounded-full"></span>
+                  <strong class="text-foreground">클래스/타입:</strong> PascalCase
+                </li>
+                <li class="flex items-center gap-2">
+                  <span class="w-2 h-2 bg-primary rounded-full"></span>
+                  <strong class="text-foreground">상수:</strong> SCREAMING_SNAKE_CASE
+                </li>
+                <li class="flex items-center gap-2">
+                  <span class="w-2 h-2 bg-primary rounded-full"></span>
+                  <strong class="text-foreground">파일명:</strong> kebab-case
+                </li>
+              </ul>
+            </div>
+          </section>
+
+          <!-- Examples -->
+          <section class="mb-8">
+            <h2 class="text-lg font-semibold mb-4">예시</h2>
+
+            <div class="space-y-4">
+              <div class="fade-in" style="animation-delay: 0.1s;">
+                <h3 class="text-sm font-medium text-green-500 mb-2 flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  올바른 예시
+                  <button onclick="copyCode('good')" class="ml-auto text-muted-foreground hover:text-foreground text-xs">복사</button>
+                </h3>
+                <div class="code-block code-good relative group">
+                  <pre class="text-green-400" id="code-good"><code>const userName = 'kent';
+function getUserById(id: string) { }
+class UserService { }
+const MAX_RETRY_COUNT = 3;
+// 파일명: user-service.ts</code></pre>
+                </div>
+              </div>
+
+              <div class="fade-in" style="animation-delay: 0.2s;">
+                <h3 class="text-sm font-medium text-red-500 mb-2 flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                  잘못된 예시
+                  <button onclick="copyCode('bad')" class="ml-auto text-muted-foreground hover:text-foreground text-xs">복사</button>
+                </h3>
+                <div class="code-block code-bad relative group">
+                  <pre class="text-red-400" id="code-bad"><code>const user_name = 'kent';       // snake_case 사용
+function GetUserById(id) { }    // 함수명 PascalCase
+class user_service { }          // 클래스명 snake_case
+const maxRetryCount = 3;        // 상수인데 camelCase
+// 파일명: UserService.ts       // PascalCase 파일명</code></pre>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Exceptions -->
+          <section class="mb-8">
+            <h2 class="text-lg font-semibold mb-4">예외 사항</h2>
+            <ul class="space-y-2">
+              <li class="flex items-start gap-3 p-3 bg-card border border-border rounded-lg fade-in" style="animation-delay: 0.3s;">
+                <svg class="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <span class="text-muted-foreground">외부 API 응답 객체의 snake_case 필드</span>
+              </li>
+              <li class="flex items-start gap-3 p-3 bg-card border border-border rounded-lg fade-in" style="animation-delay: 0.4s;">
+                <svg class="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <span class="text-muted-foreground">레거시 코드와의 호환성이 필요한 경우</span>
+              </li>
+              <li class="flex items-start gap-3 p-3 bg-card border border-border rounded-lg fade-in" style="animation-delay: 0.5s;">
+                <svg class="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <span class="text-muted-foreground">React 컴포넌트 파일명 (PascalCase 허용)</span>
+              </li>
+            </ul>
+          </section>
+        </div>
+
+        <!-- Tab Content: Discussion -->
+        <div id="tab-discussion" class="tab-content hidden">
+          <section id="discussionSection">
+            <!-- Comment Input -->
+            <div class="mb-6 p-4 bg-card border border-border rounded-xl">
+              <div class="flex items-start gap-3">
+                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex-shrink-0"></div>
+                <div class="flex-1">
+                  <textarea id="commentInput" class="comment-input w-full bg-secondary border border-border rounded-lg p-3 text-sm resize-none" rows="3" placeholder="의견을 남겨주세요..."></textarea>
+                  <div class="flex justify-end mt-2">
+                    <button onclick="postComment()" class="px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary/90 transition-colors">
+                      댓글 작성
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Comments List -->
+            <div id="commentsList" class="space-y-4">
+              <!-- Comments will be rendered here -->
+            </div>
+          </section>
+        </div>
+
+        <!-- Tab Content: History -->
+        <div id="tab-history" class="tab-content hidden">
+          <section>
+            <div class="relative">
+              <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-border"></div>
+              <div id="historyList" class="space-y-4">
+                <!-- History will be rendered here -->
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Tab Content: Related -->
+        <div id="tab-related" class="tab-content hidden">
+          <section>
+            <div id="relatedList" class="grid grid-cols-2 gap-3">
+              <!-- Related rules will be rendered here -->
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Fork Modal -->
+  <div id="forkModal" class="fixed inset-0 modal-backdrop z-50 hidden items-center justify-center">
+    <div class="bg-card border border-border rounded-xl w-full max-w-md mx-4 fade-in">
+      <div class="p-6">
+        <h2 class="text-lg font-semibold mb-4">규칙 포크</h2>
+        <p class="text-sm text-muted-foreground mb-4">
+          이 규칙을 복사하여 새로운 규칙으로 만듭니다. 원본 규칙의 변경사항은 포크된 규칙에 영향을 주지 않습니다.
+        </p>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-2">새 규칙 ID</label>
+            <input type="text" id="forkRuleId" class="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm" value="naming-variable-001-fork">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2">대상 팀</label>
+            <select class="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm">
+              <option>Frontend Team</option>
+              <option>Backend Team</option>
+              <option>개인 저장소</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-end gap-3 p-4 border-t border-border">
+        <button onclick="closeForkModal()" class="px-4 py-2 text-sm text-muted-foreground hover:text-foreground">취소</button>
+        <button onclick="forkRule()" class="px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary/90">포크 생성</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Proposal Modal -->
+  <div id="editModal" class="fixed inset-0 modal-backdrop z-50 hidden items-center justify-center">
+    <div class="bg-card border border-border rounded-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-auto fade-in">
+      <div class="p-6">
+        <h2 class="text-lg font-semibold mb-4">수정 제안</h2>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-2">제안 제목</label>
+            <input type="text" class="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm" placeholder="예: 상수 네이밍에 대한 예외 추가">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2">변경 유형</label>
+            <div class="flex gap-2">
+              <label class="flex items-center gap-2 px-3 py-2 bg-secondary rounded-lg cursor-pointer">
+                <input type="radio" name="changeType" value="update" checked> 수정
+              </label>
+              <label class="flex items-center gap-2 px-3 py-2 bg-secondary rounded-lg cursor-pointer">
+                <input type="radio" name="changeType" value="deprecate"> 폐기
+              </label>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2">변경 사유</label>
+            <textarea class="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm resize-none" rows="3" placeholder="왜 이 변경이 필요한지 설명해주세요"></textarea>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-2">변경 내용</label>
+            <textarea class="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm font-mono resize-none" rows="8" placeholder="YAML 형식으로 변경 내용을 작성하세요"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-end gap-3 p-4 border-t border-border">
+        <button onclick="closeEditModal()" class="px-4 py-2 text-sm text-muted-foreground hover:text-foreground">취소</button>
+        <button onclick="submitProposal()" class="px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary/90">제안 제출</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Share Modal -->
+  <div id="shareModal" class="fixed inset-0 modal-backdrop z-50 hidden items-center justify-center">
+    <div class="bg-card border border-border rounded-xl w-full max-w-md mx-4 fade-in">
+      <div class="p-6">
+        <h2 class="text-lg font-semibold mb-4">규칙 공유</h2>
+        <div class="space-y-3">
+          <button onclick="shareToSlack()" class="w-full flex items-center gap-3 p-3 bg-secondary rounded-lg hover:bg-secondary/80 transition-colors">
+            <span class="text-2xl">💬</span>
+            <span class="text-sm">Slack으로 공유</span>
+          </button>
+          <button onclick="shareToEmail()" class="w-full flex items-center gap-3 p-3 bg-secondary rounded-lg hover:bg-secondary/80 transition-colors">
+            <span class="text-2xl">📧</span>
+            <span class="text-sm">이메일로 공유</span>
+          </button>
+          <button onclick="copyShareLink()" class="w-full flex items-center gap-3 p-3 bg-secondary rounded-lg hover:bg-secondary/80 transition-colors">
+            <span class="text-2xl">🔗</span>
+            <span class="text-sm">링크 복사</span>
+          </button>
+        </div>
+        <div class="mt-4 p-3 bg-secondary rounded-lg">
+          <p class="text-xs text-muted-foreground mb-2">공유 링크</p>
+          <input type="text" readonly class="w-full bg-background border border-border rounded px-2 py-1 text-xs" value="https://rulebook.monol.dev/rules/naming-variable-001">
+        </div>
+      </div>
+      <div class="flex justify-end p-4 border-t border-border">
+        <button onclick="closeShareModal()" class="px-4 py-2 text-sm text-muted-foreground hover:text-foreground">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
+
+  <script type="module">
+    // API Configuration
+    const API_BASE = 'http://localhost:3001/api';
+    const TEAM_ID = '1';
+
+    // Get rule ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const ruleId = urlParams.get('id') || 'naming-001';
+
+    // API Helper
+    async function api(endpoint, options = {}) {
+      try {
+        const response = await fetch(`${API_BASE}${endpoint}`, {
+          headers: { 'Content-Type': 'application/json', ...options.headers },
+          ...options
+        });
+        const data = await response.json();
+        if (!data.success) throw new Error(data.error?.message || 'API Error');
+        return data;
+      } catch (error) {
+        console.error('API Error:', error);
+        throw error;
+      }
+    }
+
+    // Format time helper
+    function formatTime(dateString) {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+
+      if (diffMins < 60) return `${diffMins}분 전`;
+      if (diffHours < 24) return `${diffHours}시간 전`;
+      if (diffDays < 7) return `${diffDays}일 전`;
+      if (diffDays < 30) return `${Math.floor(diffDays / 7)}주 전`;
+      return `${Math.floor(diffDays / 30)}개월 전`;
+    }
+
+    // State
+    let isLiked = false;
+    let likeCount = 12;
+    let currentTab = 'content';
+    let rule = null;
+    let comments = [];
+    let history = [];
+
+    // Mock fallback data
+    const mockComments = [
+      {
+        id: 1,
+        author: 'jane',
+        avatar: 'from-pink-500 to-rose-600',
+        content: 'React 컴포넌트 파일명도 kebab-case인가요? PascalCase가 더 일반적인 것 같은데...',
+        date: '2일 전',
+        likes: 2,
+        isLiked: false,
+        replies: [
+          {
+            id: 11,
+            author: 'kent',
+            avatar: 'from-blue-500 to-purple-600',
+            content: '좋은 지적이에요! 컴포넌트 파일은 예외로 추가할게요. v1.2.0에 반영했습니다.',
+            date: '1일 전',
+            likes: 3,
+            isLiked: true
+          }
+        ]
+      },
+      {
+        id: 2,
+        author: 'bob',
+        avatar: 'from-green-500 to-emerald-600',
+        content: 'TypeScript enum도 PascalCase가 맞나요?',
+        date: '3일 전',
+        likes: 1,
+        isLiked: false,
+        replies: []
+      },
+      {
+        id: 3,
+        author: 'alice',
+        avatar: 'from-yellow-500 to-orange-600',
+        content: '이 규칙 덕분에 코드 리뷰가 훨씬 수월해졌어요. 감사합니다!',
+        date: '5일 전',
+        likes: 5,
+        isLiked: true,
+        replies: []
+      }
+    ];
+
+    const mockHistory = [
+      { version: 'v1.2.0', description: 'React 컴포넌트 파일명 예외 추가', author: 'kent', date: '2025-01-19' },
+      { version: 'v1.1.0', description: 'TypeScript 타입 예시 추가', author: 'jane', date: '2025-01-15' },
+      { version: 'v1.0.1', description: '오타 수정', author: 'bob', date: '2025-01-12' },
+      { version: 'v1.0.0', description: '초기 버전', author: 'kent', date: '2025-01-10' }
+    ];
+
+    const mockRelatedRules = [
+      { id: 'style-format-001', name: '코드 포맷팅 규칙', severity: 'warning', color: 'yellow' },
+      { id: 'typescript-types-001', name: 'TypeScript 타입 정의 규칙', severity: 'info', color: 'blue' },
+      { id: 'comment-style-001', name: '주석 스타일 규칙', severity: 'info', color: 'blue' },
+      { id: 'file-structure-001', name: '파일 구조 규칙', severity: 'warning', color: 'yellow' }
+    ];
+
+    // Tab switching
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        btn.classList.add('text-muted-foreground');
+      });
+      document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+      document.querySelector(`[data-tab="${tab}"]`).classList.remove('text-muted-foreground');
+
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('hidden');
+      });
+      document.getElementById(`tab-${tab}`).classList.remove('hidden');
+
+      if (tab === 'discussion') renderComments();
+      if (tab === 'history') renderHistory();
+      if (tab === 'related') renderRelated();
+    }
+
+    // Render comments
+    function renderComments() {
+      const container = document.getElementById('commentsList');
+      container.innerHTML = comments.map((comment, idx) => `
+        <div class="bg-card border border-border rounded-xl p-4 fade-in" style="animation-delay: ${idx * 0.1}s;">
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 bg-gradient-to-br ${comment.avatar} rounded-full flex-shrink-0"></div>
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="font-medium">@${comment.author}</span>
+                <span class="text-xs text-muted-foreground">${comment.date}</span>
+              </div>
+              <p class="text-muted-foreground text-sm">${comment.content}</p>
+              <div class="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
+                <button onclick="toggleReplyBox(${comment.id})" class="hover:text-foreground">답글</button>
+                <button onclick="toggleCommentLike(${comment.id})" class="hover:text-foreground ${comment.isLiked ? 'text-primary' : ''}">
+                  ${comment.isLiked ? '❤️' : '👍'} ${comment.likes}
+                </button>
+              </div>
+
+              <!-- Reply input box (hidden by default) -->
+              <div id="replyBox-${comment.id}" class="hidden mt-3">
+                <div class="flex items-start gap-2">
+                  <textarea id="replyInput-${comment.id}" class="flex-1 bg-secondary border border-border rounded-lg p-2 text-sm resize-none" rows="2" placeholder="답글을 작성하세요..."></textarea>
+                  <button onclick="postReply(${comment.id})" class="px-3 py-2 bg-primary text-white rounded-lg text-xs hover:bg-primary/90">전송</button>
+                </div>
+              </div>
+
+              ${comment.replies.length > 0 ? `
+                <div class="mt-4 space-y-3">
+                  ${comment.replies.map(reply => `
+                    <div class="ml-4 pl-4 border-l-2 border-border">
+                      <div class="flex items-start gap-3">
+                        <div class="w-6 h-6 bg-gradient-to-br ${reply.avatar} rounded-full flex-shrink-0"></div>
+                        <div class="flex-1">
+                          <div class="flex items-center gap-2 mb-1">
+                            <span class="font-medium text-sm">@${reply.author}</span>
+                            <span class="text-xs text-muted-foreground">${reply.date}</span>
+                          </div>
+                          <p class="text-muted-foreground text-sm">${reply.content}</p>
+                          <div class="mt-2 flex items-center gap-4 text-xs text-muted-foreground">
+                            <button class="hover:text-foreground ${reply.isLiked ? 'text-primary' : ''}">
+                              ${reply.isLiked ? '❤️' : '👍'} ${reply.likes}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Render history
+    function renderHistory() {
+      const container = document.getElementById('historyList');
+      container.innerHTML = history.map((item, idx) => `
+        <div class="relative pl-10 fade-in" style="animation-delay: ${idx * 0.1}s;">
+          <div class="absolute left-2.5 w-3 h-3 bg-primary rounded-full border-2 border-background"></div>
+          <div class="flex items-start gap-4 p-4 bg-card border border-border rounded-lg">
+            <div class="w-20 text-sm font-medium text-primary">${item.version}</div>
+            <div class="flex-1">
+              <p class="text-sm">${item.description}</p>
+              <p class="text-xs text-muted-foreground mt-1">@${item.author} · ${item.date}</p>
+            </div>
+            <button class="text-xs text-muted-foreground hover:text-foreground">비교</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Render related rules
+    function renderRelated() {
+      const severityColors = {
+        warning: { bg: 'bg-yellow-500/20', text: 'text-yellow-500', icon: '🟡' },
+        info: { bg: 'bg-blue-500/20', text: 'text-blue-500', icon: '🔵' },
+        error: { bg: 'bg-red-500/20', text: 'text-red-500', icon: '🔴' }
+      };
+
+      const container = document.getElementById('relatedList');
+      container.innerHTML = mockRelatedRules.map((rule, idx) => {
+        const colors = severityColors[rule.severity];
+        return `
+          <a href="rule-detail.html" class="p-4 bg-card border border-border rounded-lg hover:border-primary/50 transition-colors fade-in" style="animation-delay: ${idx * 0.1}s;">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="${colors.text}">${colors.icon}</span>
+              <span class="font-medium text-sm">${rule.id}</span>
+            </div>
+            <p class="text-sm text-muted-foreground">${rule.name}</p>
+            <div class="mt-2 flex items-center gap-2">
+              <span class="text-xs ${colors.bg} ${colors.text} px-2 py-0.5 rounded">${rule.severity}</span>
+            </div>
+          </a>
+        `;
+      }).join('');
+    }
+
+    // Toggle like
+    function toggleLike() {
+      isLiked = !isLiked;
+      likeCount += isLiked ? 1 : -1;
+
+      const btn = document.getElementById('likeBtn');
+      const count = document.getElementById('likeCount');
+
+      if (isLiked) {
+        btn.classList.add('text-primary', 'liked');
+        btn.classList.remove('text-muted-foreground');
+      } else {
+        btn.classList.remove('text-primary', 'liked');
+        btn.classList.add('text-muted-foreground');
+      }
+
+      count.textContent = likeCount;
+      count.classList.add('pulse');
+      setTimeout(() => count.classList.remove('pulse'), 300);
+    }
+
+    // Toggle comment like
+    function toggleCommentLike(commentId) {
+      const comment = comments.find(c => c.id === commentId);
+      if (comment) {
+        comment.isLiked = !comment.isLiked;
+        comment.likes += comment.isLiked ? 1 : -1;
+        renderComments();
+      }
+    }
+
+    // Toggle reply box
+    function toggleReplyBox(commentId) {
+      const box = document.getElementById(`replyBox-${commentId}`);
+      box.classList.toggle('hidden');
+      if (!box.classList.contains('hidden')) {
+        document.getElementById(`replyInput-${commentId}`).focus();
+      }
+    }
+
+    // Post comment
+    function postComment() {
+      const input = document.getElementById('commentInput');
+      const content = input.value.trim();
+
+      if (!content) {
+        showToast('댓글 내용을 입력해주세요', 'error');
+        return;
+      }
+
+      comments.unshift({
+        id: Date.now(),
+        author: 'kent',
+        avatar: 'from-blue-500 to-purple-600',
+        content: content,
+        date: '방금 전',
+        likes: 0,
+        isLiked: false,
+        replies: []
+      });
+
+      input.value = '';
+      renderComments();
+      updateCommentCount();
+      showToast('댓글이 등록되었습니다', 'success');
+    }
+
+    // Post reply
+    function postReply(commentId) {
+      const input = document.getElementById(`replyInput-${commentId}`);
+      const content = input.value.trim();
+
+      if (!content) return;
+
+      const comment = comments.find(c => c.id === commentId);
+      if (comment) {
+        comment.replies.push({
+          id: Date.now(),
+          author: 'kent',
+          avatar: 'from-blue-500 to-purple-600',
+          content: content,
+          date: '방금 전',
+          likes: 0,
+          isLiked: false
+        });
+
+        renderComments();
+        updateCommentCount();
+        showToast('답글이 등록되었습니다', 'success');
+      }
+    }
+
+    // Update comment count
+    function updateCommentCount() {
+      const totalComments = comments.reduce((acc, c) => acc + 1 + c.replies.length, 0);
+      document.getElementById('commentCount').textContent = `${totalComments} 댓글`;
+      document.querySelector('[data-tab="discussion"] span').textContent = totalComments;
+    }
+
+    // Scroll to comments
+    function scrollToComments() {
+      switchTab('discussion');
+      document.getElementById('discussionSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Copy code
+    function copyCode(type) {
+      const code = document.getElementById(`code-${type}`).innerText;
+      navigator.clipboard.writeText(code);
+      showToast('코드가 복사되었습니다', 'success');
+    }
+
+    // Copy rule ID
+    function copyRuleId() {
+      navigator.clipboard.writeText('naming-variable-001');
+      showToast('규칙 ID가 복사되었습니다', 'success');
+    }
+
+    // Filter by tag
+    function filterByTag(tag) {
+      window.location.href = `rules.html?tag=${tag}`;
+    }
+
+    // Modal functions
+    function openForkModal() {
+      document.getElementById('forkModal').classList.remove('hidden');
+      document.getElementById('forkModal').classList.add('flex');
+    }
+
+    function closeForkModal() {
+      document.getElementById('forkModal').classList.add('hidden');
+      document.getElementById('forkModal').classList.remove('flex');
+    }
+
+    function openEditModal() {
+      document.getElementById('editModal').classList.remove('hidden');
+      document.getElementById('editModal').classList.add('flex');
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').classList.add('hidden');
+      document.getElementById('editModal').classList.remove('flex');
+    }
+
+    function openShareModal() {
+      document.getElementById('shareModal').classList.remove('hidden');
+      document.getElementById('shareModal').classList.add('flex');
+    }
+
+    function closeShareModal() {
+      document.getElementById('shareModal').classList.add('hidden');
+      document.getElementById('shareModal').classList.remove('flex');
+    }
+
+    // Fork rule
+    function forkRule() {
+      const newId = document.getElementById('forkRuleId').value;
+      closeForkModal();
+      showToast(`규칙이 '${newId}'로 포크되었습니다`, 'success');
+    }
+
+    // Submit proposal
+    function submitProposal() {
+      closeEditModal();
+      showToast('수정 제안이 제출되었습니다', 'success');
+    }
+
+    // Share functions
+    function shareToSlack() {
+      closeShareModal();
+      showToast('Slack으로 공유 링크가 전송되었습니다', 'success');
+    }
+
+    function shareToEmail() {
+      closeShareModal();
+      window.location.href = 'mailto:?subject=Rulebook: naming-variable-001&body=https://rulebook.monol.dev/rules/naming-variable-001';
+    }
+
+    function copyShareLink() {
+      navigator.clipboard.writeText('https://rulebook.monol.dev/rules/naming-variable-001');
+      closeShareModal();
+      showToast('링크가 복사되었습니다', 'success');
+    }
+
+    // Toast notification
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+
+      const colors = {
+        success: 'bg-green-500',
+        error: 'bg-red-500',
+        info: 'bg-blue-500',
+        warning: 'bg-yellow-500'
+      };
+
+      toast.className = `${colors[type]} text-white px-4 py-3 rounded-lg shadow-lg toast-slide flex items-center gap-2`;
+      toast.innerHTML = `
+        <span>${message}</span>
+        <button onclick="this.parentElement.remove()" class="ml-2 hover:opacity-80">×</button>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    // Close modals on backdrop click
+    document.querySelectorAll('.modal-backdrop').forEach(modal => {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.classList.add('hidden');
+          modal.classList.remove('flex');
+        }
+      });
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-backdrop').forEach(modal => {
+          modal.classList.add('hidden');
+          modal.classList.remove('flex');
+        });
+      }
+    });
+
+    // Load rule from API
+    async function loadRule() {
+      try {
+        const response = await api(`/teams/${TEAM_ID}/rules/${ruleId}`);
+        rule = response.data;
+
+        // Update page title and header
+        document.title = `${rule.ruleId || rule.id} - Monol Rulebook`;
+
+        // Note: In a real implementation, we'd update all the static HTML
+        // with dynamic content from the API response
+        likeCount = rule.likes || 12;
+        document.getElementById('likeCount').textContent = likeCount;
+
+      } catch (error) {
+        showToast('규칙 로드 실패: ' + error.message, 'error');
+      }
+    }
+
+    // Load discussions from API
+    async function loadDiscussions() {
+      try {
+        const response = await api(`/teams/${TEAM_ID}/rules/${ruleId}/discussions`);
+        comments = response.data.map(d => ({
+          id: d.id,
+          author: d.user?.name || 'Unknown',
+          avatar: getAvatarGradient(d.user?.name || 'U'),
+          content: d.content,
+          date: formatTime(d.createdAt),
+          likes: d.likes || 0,
+          isLiked: false,
+          replies: (d.replies || []).map(r => ({
+            id: r.id,
+            author: r.user?.name || 'Unknown',
+            avatar: getAvatarGradient(r.user?.name || 'U'),
+            content: r.content,
+            date: formatTime(r.createdAt),
+            likes: r.likes || 0,
+            isLiked: false
+          }))
+        }));
+        if (comments.length === 0) comments = mockComments;
+        renderComments();
+      } catch (error) {
+        comments = mockComments;
+        renderComments();
+      }
+    }
+
+    // Load history from API
+    async function loadHistory() {
+      try {
+        const response = await api(`/teams/${TEAM_ID}/rules/${ruleId}/history`);
+        history = response.data;
+        if (history.length === 0) history = mockHistory;
+        renderHistory();
+      } catch (error) {
+        history = mockHistory;
+        renderHistory();
+      }
+    }
+
+    function getAvatarGradient(name) {
+      const gradients = [
+        'from-pink-500 to-rose-600',
+        'from-blue-500 to-purple-600',
+        'from-green-500 to-emerald-600',
+        'from-yellow-500 to-orange-600',
+        'from-cyan-500 to-blue-600'
+      ];
+      const idx = name.charCodeAt(0) % gradients.length;
+      return gradients[idx];
+    }
+
+    // Expose functions to global scope for onclick handlers
+    window.switchTab = switchTab;
+    window.toggleLike = toggleLike;
+    window.toggleCommentLike = toggleCommentLike;
+    window.toggleReplyBox = toggleReplyBox;
+    window.postComment = postComment;
+    window.postReply = postReply;
+    window.scrollToComments = scrollToComments;
+    window.copyCode = copyCode;
+    window.copyRuleId = copyRuleId;
+    window.filterByTag = filterByTag;
+    window.openForkModal = openForkModal;
+    window.closeForkModal = closeForkModal;
+    window.openEditModal = openEditModal;
+    window.closeEditModal = closeEditModal;
+    window.openShareModal = openShareModal;
+    window.closeShareModal = closeShareModal;
+    window.forkRule = forkRule;
+    window.submitProposal = submitProposal;
+    window.shareToSlack = shareToSlack;
+    window.shareToEmail = shareToEmail;
+    window.copyShareLink = copyShareLink;
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadRule();
+      await Promise.all([loadDiscussions(), loadHistory()]);
+      renderRelated();
+    });
+  </script>
+</body>
+</html>

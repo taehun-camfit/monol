@@ -1,5 +1,5 @@
 ---
-command: rule-history
+name: rule-history
 description: 규칙 변경 이력 조회 및 버전 관리
 args: "<rule-id> [--diff <v1> <v2>] [--rollback <version>]"
 examples:

@@ -1,5 +1,5 @@
 ---
-command: rule
+name: rule
 description: 규칙 조회 및 관리
 args: "[id | category | list | stats]"
 examples:

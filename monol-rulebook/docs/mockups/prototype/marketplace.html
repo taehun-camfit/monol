@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monol Rulebook - Marketplace</title>
+  <!-- Monol Design System -->
+  <link rel="stylesheet" href="../../../../monol-design/monol-design.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            background: '#0a0a0a',
+            foreground: '#fafafa',
+            card: '#171717',
+            'card-foreground': '#fafafa',
+            primary: '#f97316',
+            'primary-foreground': '#fafafa',
+            secondary: '#262626',
+            'secondary-foreground': '#fafafa',
+            muted: '#262626',
+            'muted-foreground': '#a3a3a3',
+            accent: '#262626',
+            'accent-foreground': '#fafafa',
+            border: '#262626',
+            input: '#262626',
+            ring: '#f97316',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .sidebar-item:hover { background: #262626; }
+    .sidebar-item.active { background: #262626; color: #f97316; }
+    .rule-card { transition: all 0.2s; }
+    .rule-card:hover { background: #1f1f1f; border-color: #404040; transform: translateY(-2px); }
+    .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+    .category-card { transition: all 0.2s; }
+    .category-card:hover { border-color: #f97316; }
+    .category-card.selected { border-color: #f97316; background: rgba(249, 115, 22, 0.1); }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes toastSlide {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    .fade-in { animation: fadeIn 0.3s ease-out; }
+    .toast-slide { animation: toastSlide 0.3s ease-out; }
+    .pulse { animation: pulse 0.3s ease-out; }
+
+    .modal-backdrop {
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(4px);
+    }
+    .adopted-badge {
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    }
+  </style>
+</head>
+<body class="bg-background text-foreground min-h-screen">
+  <div class="flex h-screen">
+    <!-- Sidebar -->
+    <aside class="w-64 border-r border-border flex flex-col">
+      <div class="p-4 border-b border-border">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold">R</div>
+          <span class="font-semibold">Rulebook</span>
+        </div>
+        <button class="mt-3 w-full flex items-center justify-between px-3 py-2 bg-secondary rounded-lg text-sm">
+          <span>Frontend Team</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+      </div>
+
+      <nav class="flex-1 p-2">
+        <a href="index.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
+          홈
+        </a>
+        <a href="rules.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          규칙
+        </a>
+        <a href="proposals.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          </svg>
+          제안
+          <span class="ml-auto bg-primary text-xs px-2 py-0.5 rounded-full">3</span>
+        </a>
+        <a href="marketplace.html" class="sidebar-item active flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+          </svg>
+          마켓플레이스
+        </a>
+        <a href="analytics.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+          분석
+        </a>
+        <a href="insights.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+          </svg>
+          AI 인사이트
+          <span class="ml-auto text-xs px-2 py-0.5 rounded-full text-white" style="background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);">AI</span>
+        </a>
+
+        <div class="mt-4 pt-4 border-t border-border">
+          <a href="#" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            설정
+          </a>
+        </div>
+      </nav>
+
+      <div class="p-4 border-t border-border">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-sm font-medium">K</div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium truncate">Kent</p>
+            <p class="text-xs text-muted-foreground truncate">Admin</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto">
+      <div class="p-6">
+        <!-- Header -->
+        <div class="mb-8">
+          <h1 class="text-2xl font-semibold mb-2">마켓플레이스</h1>
+          <p class="text-muted-foreground">다른 팀의 규칙을 탐색하고 채택하세요</p>
+        </div>
+
+        <!-- Search -->
+        <div class="mb-8">
+          <div class="flex gap-4">
+            <div class="flex-1 relative">
+              <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+              <input
+                type="text"
+                id="searchInput"
+                placeholder="규칙 검색... (예: error handling, naming convention)"
+                class="w-full pl-10 pr-4 py-3 bg-card border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                oninput="handleSearch()"
+              >
+            </div>
+            <select id="categoryFilter" onchange="handleFilter()" class="px-4 py-3 bg-card border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+              <option value="all">전체 카테고리</option>
+              <option value="style">Code Style</option>
+              <option value="security">Security</option>
+              <option value="performance">Performance</option>
+              <option value="testing">Testing</option>
+              <option value="documentation">Documentation</option>
+              <option value="tooling">Tooling</option>
+            </select>
+            <select id="sortFilter" onchange="handleSort()" class="px-4 py-3 bg-card border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+              <option value="popular">인기순</option>
+              <option value="recent">최신순</option>
+              <option value="downloads">채택 많은 순</option>
+              <option value="rating">별점 높은 순</option>
+            </select>
+          </div>
+          <div id="searchResultInfo" class="hidden mt-3 text-sm text-muted-foreground"></div>
+        </div>
+
+        <!-- Categories -->
+        <div class="mb-8">
+          <h2 class="text-lg font-semibold mb-4">카테고리</h2>
+          <div id="categoriesGrid" class="grid grid-cols-6 gap-4">
+            <!-- Categories will be rendered here -->
+          </div>
+        </div>
+
+        <!-- Featured Rules -->
+        <div class="mb-8">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold">인기 규칙</h2>
+            <a href="#" class="text-sm text-primary hover:underline">전체 보기</a>
+          </div>
+          <div id="featuredRulesGrid" class="grid grid-cols-3 gap-4">
+            <!-- Featured rules will be rendered here -->
+          </div>
+        </div>
+
+        <!-- Rule Collections -->
+        <div class="mb-8">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold">규칙 컬렉션</h2>
+            <a href="#" class="text-sm text-primary hover:underline">전체 보기</a>
+          </div>
+          <div id="collectionsGrid" class="grid grid-cols-2 gap-4">
+            <!-- Collections will be rendered here -->
+          </div>
+        </div>
+
+        <!-- Recently Added -->
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold">최근 추가됨</h2>
+            <a href="#" class="text-sm text-primary hover:underline">전체 보기</a>
+          </div>
+          <div id="recentRulesList" class="bg-card border border-border rounded-lg divide-y divide-border">
+            <!-- Recent rules will be rendered here -->
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Rule Detail Modal -->
+  <div id="ruleDetailModal" class="fixed inset-0 modal-backdrop z-50 hidden items-center justify-center">
+    <div class="bg-card border border-border rounded-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-auto fade-in">
+      <div id="ruleDetailContent">
+        <!-- Content will be rendered here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Collection Detail Modal -->
+  <div id="collectionModal" class="fixed inset-0 modal-backdrop z-50 hidden items-center justify-center">
+    <div class="bg-card border border-border rounded-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-auto fade-in">
+      <div id="collectionContent">
+        <!-- Content will be rendered here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2"></div>
+
+  <script type="module">
+    // API Configuration
+    const API_BASE = 'http://localhost:3001/api';
+
+    // API Helper
+    async function api(endpoint, options = {}) {
+      try {
+        const response = await fetch(`${API_BASE}${endpoint}`, {
+          headers: { 'Content-Type': 'application/json', ...options.headers },
+          ...options
+        });
+        const data = await response.json();
+        if (!data.success) throw new Error(data.error?.message || 'API Error');
+        return data;
+      } catch (error) {
+        console.error('API Error:', error);
+        throw error;
+      }
+    }
+
+    // State
+    let selectedCategory = 'all';
+    let searchQuery = '';
+    let sortBy = 'popular';
+    let adoptedRules = new Set(['rule-2']); // Pre-adopted rules
+    let categories = [];
+    let featuredRules = [];
+    let collections = [];
+
+    // Load data from API
+    async function loadMarketplaceData() {
+      try {
+        const [categoriesRes, rulesRes, collectionsRes] = await Promise.all([
+          api('/marketplace/categories'),
+          api('/marketplace/rules'),
+          api('/marketplace/collections')
+        ]);
+
+        categories = categoriesRes.data.length > 0 ? categoriesRes.data : mockCategories;
+        featuredRules = rulesRes.data.length > 0 ? rulesRes.data.map(r => ({
+          ...r,
+          team: r.author ? { name: r.author.name, color: r.author.color || 'blue', initial: r.author.name[0] } : { name: 'Unknown', color: 'gray', initial: 'U' }
+        })) : mockFeaturedRules;
+        collections = collectionsRes.data.length > 0 ? collectionsRes.data : mockCollections;
+
+        renderCategories();
+        renderFeaturedRules();
+        renderCollections();
+        renderRecentRules();
+      } catch (error) {
+        showToast('데이터 로드 실패: ' + error.message, 'error');
+        categories = mockCategories;
+        featuredRules = mockFeaturedRules;
+        collections = mockCollections;
+        renderCategories();
+        renderFeaturedRules();
+        renderCollections();
+        renderRecentRules();
+      }
+    }
+
+    // Search rules from API
+    async function searchRules() {
+      try {
+        const params = new URLSearchParams();
+        if (searchQuery) params.set('search', searchQuery);
+        if (selectedCategory !== 'all') params.set('category', selectedCategory);
+        params.set('sort', sortBy);
+
+        const queryString = params.toString();
+        const response = await api(`/marketplace/rules${queryString ? '?' + queryString : ''}`);
+
+        featuredRules = response.data.map(r => ({
+          ...r,
+          team: r.author ? { name: r.author.name, color: r.author.color || 'blue', initial: r.author.name[0] } : { name: 'Unknown', color: 'gray', initial: 'U' }
+        }));
+
+        renderFeaturedRules();
+      } catch (error) {
+        // Keep existing data on error
+        renderFeaturedRules();
+      }
+    }
+
+    // Debounce helper
+    function debounce(fn, delay) {
+      let timeoutId;
+      return (...args) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => fn(...args), delay);
+      };
+    }
+
+    const debouncedSearch = debounce(searchRules, 300);
+
+    // Mock fallback data
+    const mockCategories = [
+      { id: 'style', name: 'Code Style', icon: '📝', count: 248 },
+      { id: 'security', name: 'Security', icon: '🔒', count: 156 },
+      { id: 'performance', name: 'Performance', icon: '⚡', count: 89 },
+      { id: 'testing', name: 'Testing', icon: '🧪', count: 134 },
+      { id: 'documentation', name: 'Documentation', icon: '📚', count: 67 },
+      { id: 'tooling', name: 'Tooling', icon: '🔧', count: 112 }
+    ];
+
+    const mockFeaturedRules = [
+      {
+        id: 'rule-1',
+        name: 'SQL Injection 방지 규칙',
+        description: '모든 데이터베이스 쿼리에서 파라미터 바인딩을 강제합니다.',
+        severity: 'error',
+        category: 'security',
+        tags: ['security', 'database'],
+        team: { name: 'Security Team', color: 'indigo', initial: 'S' },
+        downloads: 1234,
+        rating: 4.9,
+        version: '2.1.0'
+      },
+      {
+        id: 'rule-2',
+        name: 'React 컴포넌트 네이밍',
+        description: 'React 컴포넌트의 일관된 네이밍 패턴을 정의합니다.',
+        severity: 'warning',
+        category: 'style',
+        tags: ['react', 'naming', 'style'],
+        team: { name: 'FE Guild', color: 'cyan', initial: 'F' },
+        downloads: 856,
+        rating: 4.8,
+        version: '1.5.0'
+      },
+      {
+        id: 'rule-3',
+        name: '테스트 커버리지 필수',
+        description: '새로운 기능은 반드시 80% 이상의 테스트 커버리지를 충족해야 합니다.',
+        severity: 'error',
+        category: 'testing',
+        tags: ['testing', 'coverage', 'quality'],
+        team: { name: 'QA Team', color: 'orange', initial: 'Q' },
+        downloads: 723,
+        rating: 4.7,
+        version: '1.2.0'
+      },
+      {
+        id: 'rule-4',
+        name: 'API 응답 캐싱',
+        description: '반복적인 API 호출에 대한 캐싱 전략을 정의합니다.',
+        severity: 'warning',
+        category: 'performance',
+        tags: ['api', 'caching', 'performance'],
+        team: { name: 'Platform Team', color: 'emerald', initial: 'P' },
+        downloads: 567,
+        rating: 4.6,
+        version: '1.0.0'
+      },
+      {
+        id: 'rule-5',
+        name: 'JSDoc 주석 필수',
+        description: '모든 공개 함수와 클래스에 JSDoc 주석을 작성해야 합니다.',
+        severity: 'info',
+        category: 'documentation',
+        tags: ['docs', 'jsdoc', 'comments'],
+        team: { name: 'Dev Experience', color: 'purple', initial: 'D' },
+        downloads: 445,
+        rating: 4.5,
+        version: '1.1.0'
+      },
+      {
+        id: 'rule-6',
+        name: 'ESLint 설정 표준화',
+        description: '팀 전체에서 사용할 ESLint 설정을 표준화합니다.',
+        severity: 'warning',
+        category: 'tooling',
+        tags: ['eslint', 'linting', 'tooling'],
+        team: { name: 'Infra Team', color: 'blue', initial: 'I' },
+        downloads: 892,
+        rating: 4.9,
+        version: '3.0.0'
+      }
+    ];
+
+    const mockCollections = [
+      {
+        id: 'col-1',
+        name: '스타트업 필수 규칙 세트',
+        description: '빠르게 성장하는 스타트업을 위한 핵심 코딩 규칙 모음',
+        icon: '🚀',
+        gradient: 'from-blue-500 to-purple-600',
+        ruleCount: 15,
+        downloads: 1523,
+        rating: 4.8,
+        rules: ['rule-1', 'rule-2', 'rule-3']
+      },
+      {
+        id: 'col-2',
+        name: '금융권 보안 규칙',
+        description: '금융 서비스를 위한 보안 중심 규칙 모음',
+        icon: '🛡️',
+        gradient: 'from-green-500 to-teal-600',
+        ruleCount: 28,
+        downloads: 892,
+        rating: 4.9,
+        rules: ['rule-1']
+      },
+      {
+        id: 'col-3',
+        name: 'React Best Practices',
+        description: 'React 개발의 모범 사례를 담은 규칙 모음',
+        icon: '⚛️',
+        gradient: 'from-cyan-500 to-blue-600',
+        ruleCount: 22,
+        downloads: 2156,
+        rating: 4.7,
+        rules: ['rule-2', 'rule-3']
+      },
+      {
+        id: 'col-4',
+        name: '클린 코드 가이드',
+        description: '읽기 좋은 코드를 위한 규칙 모음',
+        icon: '✨',
+        gradient: 'from-pink-500 to-rose-600',
+        ruleCount: 18,
+        downloads: 1789,
+        rating: 4.8,
+        rules: ['rule-2', 'rule-5']
+      }
+    ];
+
+    const recentRules = [
+      { id: 'recent-1', name: 'AI 코드 리뷰 가이드라인', description: 'AI 도구 사용 시 준수해야 할 규칙', team: 'AI/ML Team', color: 'pink', icon: 'AI', severity: 'info', createdAt: '1일 전' },
+      { id: 'recent-2', name: '지속 가능한 코드 작성', description: '에너지 효율적인 코드 패턴', team: 'Green Tech', color: 'emerald', icon: '♻️', severity: 'warning', createdAt: '2일 전' },
+      { id: 'recent-3', name: '다국어 지원 필수 규칙', description: 'i18n 구현 표준', team: 'Platform Team', color: 'violet', icon: '🌐', severity: 'error', createdAt: '3일 전' },
+      { id: 'recent-4', name: 'GraphQL 스키마 규칙', description: 'GraphQL API 설계 표준', team: 'API Team', color: 'fuchsia', icon: '📊', severity: 'warning', createdAt: '4일 전' },
+      { id: 'recent-5', name: '접근성 필수 체크리스트', description: 'WCAG 2.1 AA 준수 규칙', team: 'UX Team', color: 'amber', icon: '♿', severity: 'error', createdAt: '5일 전' }
+    ];
+
+    // Render Functions
+    function renderCategories() {
+      const container = document.getElementById('categoriesGrid');
+      container.innerHTML = categories.map((cat, idx) => `
+        <div onclick="selectCategory('${cat.id}')" class="category-card ${selectedCategory === cat.id ? 'selected' : ''} bg-card border border-border rounded-lg p-4 cursor-pointer text-center fade-in" style="animation-delay: ${idx * 0.05}s;">
+          <div class="text-2xl mb-2">${cat.icon}</div>
+          <p class="text-sm font-medium">${cat.name}</p>
+          <p class="text-xs text-muted-foreground">${cat.count}개</p>
+        </div>
+      `).join('');
+    }
+
+    function renderFeaturedRules() {
+      const container = document.getElementById('featuredRulesGrid');
+      let filtered = [...featuredRules];
+
+      // Apply filters
+      if (selectedCategory !== 'all') {
+        filtered = filtered.filter(r => r.category === selectedCategory);
+      }
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        filtered = filtered.filter(r =>
+          r.name.toLowerCase().includes(query) ||
+          r.description.toLowerCase().includes(query) ||
+          r.tags.some(t => t.toLowerCase().includes(query))
+        );
+      }
+
+      // Apply sorting
+      if (sortBy === 'popular') {
+        filtered.sort((a, b) => b.downloads - a.downloads);
+      } else if (sortBy === 'rating') {
+        filtered.sort((a, b) => b.rating - a.rating);
+      } else if (sortBy === 'downloads') {
+        filtered.sort((a, b) => b.downloads - a.downloads);
+      }
+
+      const severityColors = {
+        error: { bg: 'bg-red-500/20', text: 'text-red-400' },
+        warning: { bg: 'bg-yellow-500/20', text: 'text-yellow-400' },
+        info: { bg: 'bg-blue-500/20', text: 'text-blue-400' }
+      };
+
+      const categoryTags = {
+        security: { bg: 'bg-blue-500/20', text: 'text-blue-400' },
+        style: { bg: 'bg-green-500/20', text: 'text-green-400' },
+        testing: { bg: 'bg-purple-500/20', text: 'text-purple-400' },
+        performance: { bg: 'bg-orange-500/20', text: 'text-orange-400' },
+        documentation: { bg: 'bg-cyan-500/20', text: 'text-cyan-400' },
+        tooling: { bg: 'bg-pink-500/20', text: 'text-pink-400' }
+      };
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-3 text-center py-12 text-muted-foreground">
+            <p class="text-lg mb-2">검색 결과가 없습니다</p>
+            <p class="text-sm">다른 키워드로 검색해보세요</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map((rule, idx) => {
+        const sevColor = severityColors[rule.severity];
+        const catColor = categoryTags[rule.category];
+        const isAdopted = adoptedRules.has(rule.id);
+
+        return `
+          <div class="rule-card bg-card border border-border rounded-lg p-4 cursor-pointer fade-in" style="animation-delay: ${idx * 0.05}s;" onclick="openRuleDetail('${rule.id}')">
+            <div class="flex items-start justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <span class="tag ${sevColor.bg} ${sevColor.text}">${rule.severity}</span>
+                <span class="tag ${catColor.bg} ${catColor.text}">${rule.category}</span>
+                ${isAdopted ? '<span class="tag adopted-badge text-white text-xs">채택됨</span>' : ''}
+              </div>
+              <div class="flex items-center gap-1 text-yellow-400">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                <span class="text-sm">${rule.rating}</span>
+              </div>
+            </div>
+            <h3 class="font-medium mb-1">${rule.name}</h3>
+            <p class="text-sm text-muted-foreground mb-3 line-clamp-2">${rule.description}</p>
+            <div class="flex items-center justify-between text-sm">
+              <div class="flex items-center gap-2">
+                <div class="w-5 h-5 bg-${rule.team.color}-600 rounded-full flex items-center justify-center text-xs">${rule.team.initial}</div>
+                <span class="text-muted-foreground">${rule.team.name}</span>
+              </div>
+              <div class="flex items-center gap-3 text-muted-foreground">
+                <span class="flex items-center gap-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                  </svg>
+                  ${rule.downloads >= 1000 ? (rule.downloads / 1000).toFixed(1) + 'k' : rule.downloads}
+                </span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Update search result info
+      const infoEl = document.getElementById('searchResultInfo');
+      if (searchQuery || selectedCategory !== 'all') {
+        infoEl.classList.remove('hidden');
+        infoEl.textContent = `${filtered.length}개의 규칙을 찾았습니다`;
+      } else {
+        infoEl.classList.add('hidden');
+      }
+    }
+
+    function renderCollections() {
+      const container = document.getElementById('collectionsGrid');
+      container.innerHTML = collections.map((col, idx) => `
+        <div class="rule-card bg-card border border-border rounded-lg p-5 cursor-pointer fade-in" style="animation-delay: ${idx * 0.05}s;" onclick="openCollectionDetail('${col.id}')">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 bg-gradient-to-br ${col.gradient} rounded-lg flex items-center justify-center text-xl">
+              ${col.icon}
+            </div>
+            <div class="flex-1">
+              <h3 class="font-medium mb-1">${col.name}</h3>
+              <p class="text-sm text-muted-foreground mb-2">${col.description}</p>
+              <div class="flex items-center gap-4 text-sm text-muted-foreground">
+                <span>${col.ruleCount}개 규칙</span>
+                <span>${col.downloads >= 1000 ? (col.downloads / 1000).toFixed(1) + 'k' : col.downloads} 다운로드</span>
+                <div class="flex items-center gap-1 text-yellow-400">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                  <span>${col.rating}</span>
+                </div>
+              </div>
+            </div>
+            <button onclick="event.stopPropagation(); adoptCollection('${col.id}')" class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
+              채택하기
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderRecentRules() {
+      const container = document.getElementById('recentRulesList');
+      const severityColors = {
+        error: { bg: 'bg-red-500/20', text: 'text-red-400' },
+        warning: { bg: 'bg-yellow-500/20', text: 'text-yellow-400' },
+        info: { bg: 'bg-blue-500/20', text: 'text-blue-400' }
+      };
+
+      container.innerHTML = recentRules.map((rule, idx) => {
+        const sevColor = severityColors[rule.severity];
+        return `
+          <div class="p-4 flex items-center justify-between hover:bg-secondary/50 cursor-pointer fade-in" style="animation-delay: ${idx * 0.05}s;" onclick="openRuleDetail('${rule.id}')">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 bg-${rule.color}-600 rounded-lg flex items-center justify-center text-sm">${rule.icon}</div>
+              <div>
+                <h3 class="font-medium">${rule.name}</h3>
+                <p class="text-sm text-muted-foreground">${rule.description}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="text-sm text-muted-foreground">${rule.team}</div>
+              <span class="tag ${sevColor.bg} ${sevColor.text}">${rule.severity}</span>
+              <span class="text-sm text-muted-foreground">${rule.createdAt}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Event Handlers
+    function selectCategory(catId) {
+      selectedCategory = selectedCategory === catId ? 'all' : catId;
+      document.getElementById('categoryFilter').value = selectedCategory;
+      renderCategories();
+      renderFeaturedRules();
+    }
+
+    function handleSearch() {
+      searchQuery = document.getElementById('searchInput').value;
+      debouncedSearch();
+    }
+
+    function handleFilter() {
+      selectedCategory = document.getElementById('categoryFilter').value;
+      renderCategories();
+      searchRules();
+    }
+
+    function handleSort() {
+      sortBy = document.getElementById('sortFilter').value;
+      searchRules();
+    }
+
+    function openRuleDetail(ruleId) {
+      const rule = featuredRules.find(r => r.id === ruleId) || recentRules.find(r => r.id === ruleId);
+      if (!rule) return;
+
+      const isAdopted = adoptedRules.has(ruleId);
+      const modal = document.getElementById('ruleDetailModal');
+      const content = document.getElementById('ruleDetailContent');
+
+      const severityColors = {
+        error: { bg: 'bg-red-500/20', text: 'text-red-400' },
+        warning: { bg: 'bg-yellow-500/20', text: 'text-yellow-400' },
+        info: { bg: 'bg-blue-500/20', text: 'text-blue-400' }
+      };
+      const sevColor = severityColors[rule.severity];
+
+      content.innerHTML = `
+        <div class="p-6">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <div class="flex items-center gap-2 mb-2">
+                <span class="tag ${sevColor.bg} ${sevColor.text}">${rule.severity}</span>
+                ${rule.version ? `<span class="text-sm text-muted-foreground">v${rule.version}</span>` : ''}
+                ${isAdopted ? '<span class="tag adopted-badge text-white text-xs">채택됨</span>' : ''}
+              </div>
+              <h2 class="text-xl font-semibold">${rule.name}</h2>
+            </div>
+            <button onclick="closeRuleDetailModal()" class="text-muted-foreground hover:text-foreground">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+
+          <p class="text-muted-foreground mb-6">${rule.description}</p>
+
+          ${rule.team ? `
+            <div class="flex items-center gap-3 mb-6 p-3 bg-secondary rounded-lg">
+              <div class="w-10 h-10 bg-${rule.team.color}-600 rounded-full flex items-center justify-center">${rule.team.initial}</div>
+              <div>
+                <p class="font-medium">${rule.team.name}</p>
+                <p class="text-sm text-muted-foreground">규칙 제공팀</p>
+              </div>
+            </div>
+          ` : ''}
+
+          ${rule.tags ? `
+            <div class="mb-6">
+              <h3 class="text-sm font-medium mb-2">태그</h3>
+              <div class="flex flex-wrap gap-2">
+                ${rule.tags.map(tag => `<span class="tag bg-secondary text-muted-foreground">${tag}</span>`).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          ${rule.rating ? `
+            <div class="flex items-center gap-6 mb-6 p-4 bg-secondary rounded-lg">
+              <div class="text-center">
+                <div class="flex items-center justify-center gap-1 text-yellow-400 mb-1">
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                  <span class="text-lg font-semibold">${rule.rating}</span>
+                </div>
+                <p class="text-xs text-muted-foreground">평점</p>
+              </div>
+              <div class="text-center">
+                <p class="text-lg font-semibold mb-1">${rule.downloads >= 1000 ? (rule.downloads / 1000).toFixed(1) + 'k' : rule.downloads}</p>
+                <p class="text-xs text-muted-foreground">다운로드</p>
+              </div>
+            </div>
+          ` : ''}
+        </div>
+        <div class="flex justify-end gap-3 p-4 border-t border-border">
+          <button onclick="closeRuleDetailModal()" class="px-4 py-2 text-sm text-muted-foreground hover:text-foreground">닫기</button>
+          ${isAdopted ? `
+            <button onclick="removeRule('${ruleId}')" class="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg text-sm hover:bg-red-500/30 transition-colors">
+              채택 취소
+            </button>
+          ` : `
+            <button onclick="adoptRule('${ruleId}')" class="px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary/90 transition-colors">
+              채택하기
+            </button>
+          `}
+        </div>
+      `;
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeRuleDetailModal() {
+      const modal = document.getElementById('ruleDetailModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function openCollectionDetail(colId) {
+      const collection = collections.find(c => c.id === colId);
+      if (!collection) return;
+
+      const modal = document.getElementById('collectionModal');
+      const content = document.getElementById('collectionContent');
+
+      const collectionRules = collection.rules.map(rId => featuredRules.find(r => r.id === rId)).filter(Boolean);
+
+      content.innerHTML = `
+        <div class="p-6">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center gap-4">
+              <div class="w-16 h-16 bg-gradient-to-br ${collection.gradient} rounded-xl flex items-center justify-center text-3xl">
+                ${collection.icon}
+              </div>
+              <div>
+                <h2 class="text-xl font-semibold">${collection.name}</h2>
+                <p class="text-muted-foreground">${collection.description}</p>
+              </div>
+            </div>
+            <button onclick="closeCollectionModal()" class="text-muted-foreground hover:text-foreground">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="flex items-center gap-6 mb-6 p-4 bg-secondary rounded-lg">
+            <div class="text-center">
+              <p class="text-lg font-semibold mb-1">${collection.ruleCount}</p>
+              <p class="text-xs text-muted-foreground">규칙</p>
+            </div>
+            <div class="text-center">
+              <p class="text-lg font-semibold mb-1">${collection.downloads >= 1000 ? (collection.downloads / 1000).toFixed(1) + 'k' : collection.downloads}</p>
+              <p class="text-xs text-muted-foreground">다운로드</p>
+            </div>
+            <div class="text-center">
+              <div class="flex items-center justify-center gap-1 text-yellow-400">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                <span class="text-lg font-semibold">${collection.rating}</span>
+              </div>
+              <p class="text-xs text-muted-foreground">평점</p>
+            </div>
+          </div>
+
+          <h3 class="text-sm font-medium mb-3">포함된 규칙 (미리보기)</h3>
+          <div class="space-y-2 mb-4">
+            ${collectionRules.map(rule => {
+              const isAdopted = adoptedRules.has(rule.id);
+              return `
+                <div class="flex items-center justify-between p-3 bg-secondary rounded-lg">
+                  <div class="flex items-center gap-3">
+                    <span class="tag bg-${rule.severity === 'error' ? 'red' : rule.severity === 'warning' ? 'yellow' : 'blue'}-500/20 text-${rule.severity === 'error' ? 'red' : rule.severity === 'warning' ? 'yellow' : 'blue'}-400">${rule.severity}</span>
+                    <span class="font-medium text-sm">${rule.name}</span>
+                    ${isAdopted ? '<span class="text-xs text-green-400">(채택됨)</span>' : ''}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+            <p class="text-xs text-muted-foreground text-center">외 ${collection.ruleCount - collectionRules.length}개 규칙...</p>
+          </div>
+        </div>
+        <div class="flex justify-end gap-3 p-4 border-t border-border">
+          <button onclick="closeCollectionModal()" class="px-4 py-2 text-sm text-muted-foreground hover:text-foreground">닫기</button>
+          <button onclick="adoptCollection('${colId}')" class="px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary/90 transition-colors">
+            전체 채택하기
+          </button>
+        </div>
+      `;
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeCollectionModal() {
+      const modal = document.getElementById('collectionModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    // Adopt/Remove Functions
+    function adoptRule(ruleId) {
+      adoptedRules.add(ruleId);
+      const rule = featuredRules.find(r => r.id === ruleId);
+      closeRuleDetailModal();
+      renderFeaturedRules();
+      showToast(`'${rule?.name || ruleId}' 규칙을 채택했습니다`, 'success');
+    }
+
+    function removeRule(ruleId) {
+      adoptedRules.delete(ruleId);
+      const rule = featuredRules.find(r => r.id === ruleId);
+      closeRuleDetailModal();
+      renderFeaturedRules();
+      showToast(`'${rule?.name || ruleId}' 규칙 채택을 취소했습니다`, 'info');
+    }
+
+    function adoptCollection(colId) {
+      const collection = collections.find(c => c.id === colId);
+      if (collection) {
+        collection.rules.forEach(rId => adoptedRules.add(rId));
+        closeCollectionModal();
+        renderFeaturedRules();
+        showToast(`'${collection.name}' 컬렉션의 ${collection.rules.length}개 규칙을 채택했습니다`, 'success');
+      }
+    }
+
+    // Toast notification
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+
+      const colors = {
+        success: 'bg-green-500',
+        error: 'bg-red-500',
+        info: 'bg-blue-500',
+        warning: 'bg-yellow-500'
+      };
+
+      const icons = {
+        success: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>',
+        error: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>',
+        info: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+        warning: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>'
+      };
+
+      toast.className = `${colors[type]} text-white px-4 py-3 rounded-lg shadow-lg toast-slide flex items-center gap-3`;
+      toast.innerHTML = `
+        ${icons[type]}
+        <span>${message}</span>
+        <button onclick="this.parentElement.remove()" class="ml-2 hover:opacity-80">×</button>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    // Modal close handlers
+    document.getElementById('ruleDetailModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('ruleDetailModal')) {
+        closeRuleDetailModal();
+      }
+    });
+
+    document.getElementById('collectionModal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('collectionModal')) {
+        closeCollectionModal();
+      }
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeRuleDetailModal();
+        closeCollectionModal();
+      }
+      // Cmd/Ctrl + K for search focus
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        document.getElementById('searchInput').focus();
+      }
+    });
+
+    // Expose functions to global scope for onclick handlers
+    window.selectCategory = selectCategory;
+    window.handleSearch = handleSearch;
+    window.handleFilter = handleFilter;
+    window.handleSort = handleSort;
+    window.openRuleDetail = openRuleDetail;
+    window.closeRuleDetailModal = closeRuleDetailModal;
+    window.openCollectionDetail = openCollectionDetail;
+    window.closeCollectionModal = closeCollectionModal;
+    window.adoptRule = adoptRule;
+    window.removeRule = removeRule;
+    window.adoptCollection = adoptCollection;
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      loadMarketplaceData();
+    });
+  </script>
+</body>
+</html>

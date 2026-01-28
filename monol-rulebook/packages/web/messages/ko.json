@@ -1,0 +1,132 @@
+{
+  "common": {
+    "loading": "로딩 중...",
+    "error": "오류가 발생했습니다",
+    "save": "저장",
+    "cancel": "취소",
+    "delete": "삭제",
+    "edit": "수정",
+    "create": "생성",
+    "search": "검색",
+    "filter": "필터",
+    "sort": "정렬",
+    "more": "더보기",
+    "back": "뒤로",
+    "next": "다음",
+    "previous": "이전",
+    "submit": "제출",
+    "confirm": "확인",
+    "close": "닫기"
+  },
+  "auth": {
+    "login": "로그인",
+    "logout": "로그아웃",
+    "signUp": "회원가입",
+    "forgotPassword": "비밀번호 찾기",
+    "loginWithGitHub": "GitHub로 로그인",
+    "welcomeBack": "다시 오셨군요!",
+    "newAccount": "새 계정 만들기"
+  },
+  "nav": {
+    "dashboard": "대시보드",
+    "teams": "팀",
+    "rules": "규칙",
+    "proposals": "제안",
+    "marketplace": "마켓플레이스",
+    "analytics": "분석",
+    "settings": "설정",
+    "help": "도움말"
+  },
+  "team": {
+    "create": "팀 만들기",
+    "join": "팀 가입",
+    "leave": "팀 나가기",
+    "members": "멤버",
+    "settings": "팀 설정",
+    "invite": "초대하기",
+    "role": {
+      "owner": "소유자",
+      "admin": "관리자",
+      "member": "멤버",
+      "viewer": "뷰어"
+    },
+    "noTeams": "소속된 팀이 없습니다"
+  },
+  "rule": {
+    "create": "규칙 만들기",
+    "edit": "규칙 수정",
+    "delete": "규칙 삭제",
+    "enable": "활성화",
+    "disable": "비활성화",
+    "severity": {
+      "error": "에러",
+      "warning": "경고",
+      "info": "정보"
+    },
+    "category": "카테고리",
+    "tags": "태그",
+    "examples": "예시",
+    "goodExamples": "올바른 예시",
+    "badExamples": "잘못된 예시",
+    "exceptions": "예외 사항",
+    "noRules": "규칙이 없습니다",
+    "searchPlaceholder": "규칙 검색..."
+  },
+  "proposal": {
+    "create": "제안 만들기",
+    "submit": "제출",
+    "approve": "승인",
+    "reject": "거절",
+    "requestChanges": "변경 요청",
+    "merge": "머지",
+    "status": {
+      "draft": "초안",
+      "pending": "검토 중",
+      "approved": "승인됨",
+      "rejected": "거절됨",
+      "merged": "머지됨"
+    },
+    "noProposals": "제안이 없습니다"
+  },
+  "marketplace": {
+    "browse": "둘러보기",
+    "adopt": "채택하기",
+    "publish": "발행하기",
+    "trending": "인기 급상승",
+    "popular": "인기",
+    "recent": "최신",
+    "reviews": "리뷰",
+    "rating": "평점",
+    "downloads": "다운로드"
+  },
+  "analytics": {
+    "compliance": "준수율",
+    "violations": "위반",
+    "trends": "트렌드",
+    "leaderboard": "리더보드",
+    "period": {
+      "day": "일",
+      "week": "주",
+      "month": "월",
+      "year": "년"
+    }
+  },
+  "errors": {
+    "notFound": "페이지를 찾을 수 없습니다",
+    "unauthorized": "로그인이 필요합니다",
+    "forbidden": "접근 권한이 없습니다",
+    "serverError": "서버 오류가 발생했습니다",
+    "networkError": "네트워크 연결을 확인해주세요",
+    "validationError": "입력값을 확인해주세요"
+  },
+  "accessibility": {
+    "skipToContent": "본문으로 건너뛰기",
+    "menu": "메뉴",
+    "openMenu": "메뉴 열기",
+    "closeMenu": "메뉴 닫기",
+    "expandSection": "섹션 펼치기",
+    "collapseSection": "섹션 접기",
+    "loading": "로딩 중",
+    "required": "필수 항목"
+  }
+}

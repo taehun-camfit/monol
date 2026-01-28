@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monol Rulebook - Dashboard</title>
+  <!-- Monol Design System -->
+  <link rel="stylesheet" href="../../../../monol-design/monol-design.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            background: '#0a0a0a',
+            foreground: '#fafafa',
+            card: '#171717',
+            'card-foreground': '#fafafa',
+            primary: '#f97316',
+            'primary-foreground': '#fafafa',
+            secondary: '#262626',
+            'secondary-foreground': '#fafafa',
+            muted: '#262626',
+            'muted-foreground': '#a3a3a3',
+            accent: '#262626',
+            'accent-foreground': '#fafafa',
+            border: '#262626',
+            input: '#262626',
+            ring: '#f97316',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .sidebar-item:hover { background: #262626; }
+    .sidebar-item.active { background: #262626; color: #f97316; }
+    .stat-card { transition: all 0.2s; }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .rule-card { transition: all 0.2s; }
+    .rule-card:hover { background: #1f1f1f; border-color: #404040; }
+    .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+    .notification-dot { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .activity-item { animation: slideIn 0.3s ease-out; }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+    .dropdown-menu { transform-origin: top; animation: dropdownOpen 0.15s ease-out; }
+    @keyframes dropdownOpen { from { opacity: 0; transform: scaleY(0.95); } to { opacity: 1; transform: scaleY(1); } }
+    .modal-backdrop { animation: fadeIn 0.2s ease-out; }
+    .modal-content { animation: modalSlide 0.2s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes modalSlide { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    .toast { animation: toastSlide 0.3s ease-out; }
+    @keyframes toastSlide { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body class="bg-background text-foreground min-h-screen">
+  <div class="flex h-screen">
+    <!-- Sidebar -->
+    <aside class="w-64 border-r border-border flex flex-col">
+      <!-- Logo -->
+      <div class="p-4 border-b border-border">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold">R</div>
+          <span class="font-semibold">Rulebook</span>
+          <span class="ml-auto text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded">v0.3.5</span>
+        </div>
+        <!-- Team Selector -->
+        <div class="relative mt-3">
+          <button id="teamSelectorBtn" class="w-full flex items-center justify-between px-3 py-2 bg-secondary rounded-lg text-sm hover:bg-secondary/80 transition-colors">
+            <div class="flex items-center gap-2">
+              <div class="w-5 h-5 bg-cyan-600 rounded flex items-center justify-center text-xs font-medium">F</div>
+              <span>Frontend Team</span>
+            </div>
+            <svg class="w-4 h-4 transition-transform" id="teamSelectorArrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <!-- Team Dropdown -->
+          <div id="teamDropdown" class="hidden absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-xl z-50 dropdown-menu">
+            <div class="p-2">
+              <div class="px-2 py-1.5 text-xs text-muted-foreground uppercase tracking-wider">내 팀</div>
+              <button class="w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-secondary text-left team-option" data-team="frontend">
+                <div class="w-5 h-5 bg-cyan-600 rounded flex items-center justify-center text-xs font-medium">F</div>
+                <span class="flex-1">Frontend Team</span>
+                <svg class="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+              </button>
+              <button class="w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-secondary text-left team-option" data-team="backend">
+                <div class="w-5 h-5 bg-green-600 rounded flex items-center justify-center text-xs font-medium">B</div>
+                <span class="flex-1">Backend Team</span>
+              </button>
+              <button class="w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-secondary text-left team-option" data-team="platform">
+                <div class="w-5 h-5 bg-purple-600 rounded flex items-center justify-center text-xs font-medium">P</div>
+                <span class="flex-1">Platform Team</span>
+              </button>
+              <div class="border-t border-border mt-2 pt-2">
+                <button class="w-full flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-secondary text-left text-muted-foreground">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                  </svg>
+                  <span>새 팀 만들기</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="flex-1 p-2">
+        <a href="index.html" class="sidebar-item active flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
+          홈
+        </a>
+        <a href="rules.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          규칙
+          <span class="ml-auto text-xs bg-secondary px-2 py-0.5 rounded-full">42</span>
+        </a>
+        <a href="proposals.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          </svg>
+          제안
+          <span class="ml-auto bg-primary text-xs px-2 py-0.5 rounded-full notification-dot">3</span>
+        </a>
+        <a href="marketplace.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+          </svg>
+          마켓플레이스
+        </a>
+        <a href="analytics.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+          분석
+        </a>
+        <a href="insights.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+          </svg>
+          AI 인사이트
+          <span class="ml-auto text-xs px-2 py-0.5 rounded-full text-white" style="background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);">AI</span>
+        </a>
+
+        <div class="mt-4 pt-4 border-t border-border">
+          <div class="px-3 py-2 text-xs text-muted-foreground uppercase tracking-wider">도구</div>
+          <a href="#" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground" onclick="openSyncModal()">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            플랫폼 동기화
+          </a>
+          <a href="#" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            설정
+          </a>
+        </div>
+      </nav>
+
+      <!-- User -->
+      <div class="p-4 border-t border-border">
+        <div class="flex items-center gap-3 cursor-pointer hover:bg-secondary rounded-lg p-2 -m-2 transition-colors" onclick="toggleUserMenu()">
+          <div class="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-sm font-medium relative">
+            K
+            <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-background"></span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium truncate">Kent</p>
+            <p class="text-xs text-muted-foreground truncate">Admin</p>
+          </div>
+          <svg class="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+          </svg>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto">
+      <div class="p-6">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h1 class="text-2xl font-semibold">Frontend Team</h1>
+            <p class="text-muted-foreground">팀 규칙 현황과 최근 활동을 확인하세요</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <!-- Search -->
+            <div class="relative">
+              <input type="text" placeholder="규칙 검색... (⌘K)" class="w-64 pl-10 pr-4 py-2 bg-card border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary" id="globalSearch">
+              <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+            </div>
+            <!-- Notifications -->
+            <button class="relative p-2 hover:bg-secondary rounded-lg transition-colors" onclick="toggleNotifications()">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+              </svg>
+              <span class="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full notification-dot"></span>
+            </button>
+            <!-- New Rule Button -->
+            <button class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-2" onclick="openNewRuleModal()">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+              </svg>
+              새 규칙
+            </button>
+          </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-4 gap-4 mb-6">
+          <div class="stat-card bg-card border border-border rounded-lg p-4 cursor-pointer" onclick="location.href='rules.html'">
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+              </div>
+              <span class="text-xs text-green-400 flex items-center gap-1">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+                </svg>
+                +12%
+              </span>
+            </div>
+            <p class="text-2xl font-semibold mb-1">42</p>
+            <p class="text-sm text-muted-foreground">전체 규칙</p>
+          </div>
+
+          <div class="stat-card bg-card border border-border rounded-lg p-4 cursor-pointer" onclick="location.href='rules.html?filter=active'">
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <span class="text-xs text-muted-foreground">90%</span>
+            </div>
+            <p class="text-2xl font-semibold mb-1">38</p>
+            <p class="text-sm text-muted-foreground">활성 규칙</p>
+          </div>
+
+          <div class="stat-card bg-card border border-border rounded-lg p-4 cursor-pointer" onclick="location.href='proposals.html'">
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 bg-yellow-500/20 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <span class="text-xs text-yellow-400 notification-dot">리뷰 필요</span>
+            </div>
+            <p class="text-2xl font-semibold mb-1">3</p>
+            <p class="text-sm text-muted-foreground">대기 중 제안</p>
+          </div>
+
+          <div class="stat-card bg-card border border-border rounded-lg p-4 cursor-pointer">
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+              </div>
+              <span class="text-xs text-green-400">+2 이번달</span>
+            </div>
+            <p class="text-2xl font-semibold mb-1">8</p>
+            <p class="text-sm text-muted-foreground">팀원</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-6">
+          <!-- Recent Activity -->
+          <div class="col-span-2 bg-card border border-border rounded-lg">
+            <div class="p-4 border-b border-border flex items-center justify-between">
+              <h2 class="font-semibold">최근 활동</h2>
+              <div class="flex gap-2">
+                <button class="activity-filter px-3 py-1 bg-primary/20 text-primary rounded-full text-sm font-medium" data-filter="all">전체</button>
+                <button class="activity-filter px-3 py-1 bg-secondary text-muted-foreground rounded-full text-sm" data-filter="rules">규칙</button>
+                <button class="activity-filter px-3 py-1 bg-secondary text-muted-foreground rounded-full text-sm" data-filter="proposals">제안</button>
+                <button class="activity-filter px-3 py-1 bg-secondary text-muted-foreground rounded-full text-sm" data-filter="reviews">리뷰</button>
+              </div>
+            </div>
+            <div class="divide-y divide-border" id="activityList">
+              <!-- Activity items will be rendered here -->
+            </div>
+            <div class="p-4 text-center border-t border-border">
+              <button class="text-sm text-primary hover:underline">모든 활동 보기</button>
+            </div>
+          </div>
+
+          <!-- Right Sidebar -->
+          <div class="space-y-6">
+            <!-- Quick Actions -->
+            <div class="bg-card border border-border rounded-lg p-4">
+              <h2 class="font-semibold mb-4">빠른 작업</h2>
+              <div class="space-y-2">
+                <button class="w-full flex items-center gap-3 px-3 py-2 bg-secondary rounded-lg text-sm hover:bg-secondary/80 transition-colors text-left" onclick="openNewRuleModal()">
+                  <div class="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center">
+                    <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="font-medium">새 규칙 만들기</p>
+                    <p class="text-xs text-muted-foreground">팀 규칙 추가</p>
+                  </div>
+                </button>
+                <button class="w-full flex items-center gap-3 px-3 py-2 bg-secondary rounded-lg text-sm hover:bg-secondary/80 transition-colors text-left" onclick="location.href='marketplace.html'">
+                  <div class="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                    <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="font-medium">규칙 채택</p>
+                    <p class="text-xs text-muted-foreground">마켓플레이스 탐색</p>
+                  </div>
+                </button>
+                <button class="w-full flex items-center gap-3 px-3 py-2 bg-secondary rounded-lg text-sm hover:bg-secondary/80 transition-colors text-left" onclick="openSyncModal()">
+                  <div class="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">
+                    <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="font-medium">플랫폼 동기화</p>
+                    <p class="text-xs text-muted-foreground">Cursor, Claude 등</p>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Popular Tags -->
+            <div class="bg-card border border-border rounded-lg p-4">
+              <h2 class="font-semibold mb-4">인기 태그</h2>
+              <div class="flex flex-wrap gap-2" id="tagCloud">
+                <!-- Tags will be rendered here -->
+              </div>
+            </div>
+
+            <!-- Team Members -->
+            <div class="bg-card border border-border rounded-lg p-4">
+              <div class="flex items-center justify-between mb-4">
+                <h2 class="font-semibold">팀원</h2>
+                <button class="text-xs text-primary hover:underline">관리</button>
+              </div>
+              <div class="space-y-3" id="teamMembers">
+                <!-- Team members will be rendered here -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Sync Modal -->
+  <div id="syncModal" class="hidden fixed inset-0 z-50">
+    <div class="modal-backdrop absolute inset-0 bg-black/50" onclick="closeSyncModal()"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+      <div class="modal-content bg-card border border-border rounded-xl shadow-2xl w-full max-w-md">
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-lg font-semibold">플랫폼 동기화</h2>
+            <button onclick="closeSyncModal()" class="p-1 hover:bg-secondary rounded-lg transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="space-y-3">
+            <button class="sync-option w-full flex items-center gap-4 p-4 bg-secondary rounded-lg hover:bg-secondary/80 transition-colors text-left" data-platform="cursor">
+              <div class="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center text-2xl">
+                <svg viewBox="0 0 24 24" class="w-7 h-7" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+              </div>
+              <div class="flex-1">
+                <p class="font-medium">Cursor</p>
+                <p class="text-sm text-muted-foreground">마지막 동기화: 2시간 전</p>
+              </div>
+              <div class="w-3 h-3 bg-green-400 rounded-full"></div>
+            </button>
+
+            <button class="sync-option w-full flex items-center gap-4 p-4 bg-secondary rounded-lg hover:bg-secondary/80 transition-colors text-left" data-platform="claude">
+              <div class="w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center text-2xl">
+                <svg viewBox="0 0 24 24" class="w-7 h-7 text-orange-400" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+              </div>
+              <div class="flex-1">
+                <p class="font-medium">Claude Code</p>
+                <p class="text-sm text-muted-foreground">마지막 동기화: 방금 전</p>
+              </div>
+              <div class="w-3 h-3 bg-green-400 rounded-full"></div>
+            </button>
+
+            <button class="sync-option w-full flex items-center gap-4 p-4 bg-secondary rounded-lg hover:bg-secondary/80 transition-colors text-left" data-platform="vscode">
+              <div class="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center text-2xl">
+                <svg viewBox="0 0 24 24" class="w-7 h-7 text-blue-400" fill="currentColor"><path d="M17.5 0L7 9.5 2 6v12l5-3.5L17.5 24 22 22V2l-4.5-2zM7 14.5L4 12l3-2.5v5zm11 5L9 12l9-7.5v15z"/></svg>
+              </div>
+              <div class="flex-1">
+                <p class="font-medium">VS Code</p>
+                <p class="text-sm text-muted-foreground">설정 필요</p>
+              </div>
+              <div class="w-3 h-3 bg-muted-foreground rounded-full"></div>
+            </button>
+          </div>
+
+          <div class="mt-6 pt-4 border-t border-border">
+            <button id="syncAllBtn" class="w-full py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              모든 플랫폼 동기화
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Rule Modal -->
+  <div id="newRuleModal" class="hidden fixed inset-0 z-50">
+    <div class="modal-backdrop absolute inset-0 bg-black/50" onclick="closeNewRuleModal()"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+      <div class="modal-content bg-card border border-border rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-lg font-semibold">새 규칙 만들기</h2>
+            <button onclick="closeNewRuleModal()" class="p-1 hover:bg-secondary rounded-lg transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+
+          <form id="newRuleForm" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium mb-2">규칙 ID *</label>
+              <input type="text" name="ruleId" placeholder="예: naming-component-001" class="w-full px-4 py-2 bg-secondary border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary" required>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-2">규칙 이름 *</label>
+              <input type="text" name="ruleName" placeholder="예: React 컴포넌트 네이밍 규칙" class="w-full px-4 py-2 bg-secondary border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary" required>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-2">설명 *</label>
+              <textarea name="description" rows="3" placeholder="규칙에 대한 상세 설명..." class="w-full px-4 py-2 bg-secondary border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary resize-none" required></textarea>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium mb-2">카테고리 *</label>
+                <select name="category" class="w-full px-4 py-2 bg-secondary border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary" required>
+                  <option value="">선택...</option>
+                  <option value="code/naming">Code / Naming</option>
+                  <option value="code/style">Code / Style</option>
+                  <option value="code/security">Code / Security</option>
+                  <option value="code/performance">Code / Performance</option>
+                  <option value="workflow/git">Workflow / Git</option>
+                  <option value="workflow/review">Workflow / Review</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-2">심각도 *</label>
+                <select name="severity" class="w-full px-4 py-2 bg-secondary border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary" required>
+                  <option value="">선택...</option>
+                  <option value="error">Error (필수)</option>
+                  <option value="warning">Warning (권장)</option>
+                  <option value="info">Info (참고)</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-2">태그</label>
+              <input type="text" name="tags" placeholder="쉼표로 구분 (예: naming, react, component)" class="w-full px-4 py-2 bg-secondary border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-2">올바른 예시</label>
+              <textarea name="goodExample" rows="3" placeholder="// 좋은 예시 코드..." class="w-full px-4 py-2 bg-secondary border border-border rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary resize-none"></textarea>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium mb-2">잘못된 예시</label>
+              <textarea name="badExample" rows="3" placeholder="// 나쁜 예시 코드..." class="w-full px-4 py-2 bg-secondary border border-border rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary resize-none"></textarea>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <input type="checkbox" name="createProposal" id="createProposal" class="w-4 h-4 rounded border-border bg-secondary text-primary focus:ring-primary">
+              <label for="createProposal" class="text-sm">제안으로 생성 (팀 승인 필요)</label>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-4 border-t border-border">
+              <button type="button" onclick="closeNewRuleModal()" class="px-4 py-2 bg-secondary text-muted-foreground rounded-lg text-sm hover:bg-secondary/80 transition-colors">
+                취소
+              </button>
+              <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
+                규칙 생성
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+
+  <script type="module">
+    // API Configuration
+    const API_BASE = 'http://localhost:3001/api';
+    const TEAM_ID = '1';
+
+    // API Helper
+    async function api(endpoint) {
+      try {
+        const response = await fetch(`${API_BASE}${endpoint}`);
+        const data = await response.json();
+        return data.success ? data.data : null;
+      } catch (error) {
+        console.error('API Error:', error);
+        return null;
+      }
+    }
+
+    // State
+    let activities = [];
+    let tags = [];
+    let teamMembers = [];
+    let stats = null;
+
+    // Render Functions
+    function renderActivities(filter = 'all') {
+      const list = document.getElementById('activityList');
+      const typeMap = { approve: 'reviews', create: 'rules', adopt: 'rules' };
+      const actionMap = {
+        approve: '규칙을 승인했습니다',
+        create: '새 규칙을 생성했습니다',
+        adopt: '규칙을 채택했습니다'
+      };
+
+      const filtered = filter === 'all' ? activities : activities.filter(a => typeMap[a.type] === filter);
+
+      list.innerHTML = filtered.map(activity => {
+        const colors = { K: 'bg-green-600', J: 'bg-blue-600', M: 'bg-purple-600', S: 'bg-pink-600', A: 'bg-cyan-600' };
+        const initial = activity.user?.initial || activity.user?.name?.[0] || '?';
+        const color = colors[initial] || 'bg-gray-600';
+        const userName = activity.user?.name || 'Unknown';
+        const action = actionMap[activity.type] || activity.type;
+        const target = activity.target?.name || '';
+        const time = formatTime(activity.createdAt);
+
+        return `
+          <div class="activity-item p-4 flex items-start gap-3 hover:bg-secondary/30 cursor-pointer transition-colors">
+            <div class="w-10 h-10 ${color} rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0">
+              ${initial}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm">
+                <span class="font-medium">${userName}</span>
+                <span class="text-muted-foreground">${action}</span>
+              </p>
+              <p class="text-sm text-primary truncate">${target}</p>
+              <p class="text-xs text-muted-foreground mt-1">${time}</p>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderTags() {
+      const container = document.getElementById('tagCloud');
+      const maxCount = Math.max(...tags.map(t => t.count));
+
+      container.innerHTML = tags.map(tag => {
+        const ratio = tag.count / maxCount;
+        const size = ratio > 0.7 ? 'text-lg' : ratio > 0.4 ? 'text-base' : ratio > 0.2 ? 'text-sm' : 'text-xs';
+        return `
+          <button class="px-3 py-1.5 bg-secondary hover:bg-secondary/80 rounded-full ${size} transition-colors" onclick="location.href='rules.html?tag=${tag.name}'">
+            ${tag.name}
+            <span class="text-muted-foreground ml-1">${tag.count}</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function renderTeamMembers() {
+      const container = document.getElementById('teamMembers');
+      const colors = { K: 'bg-green-600', J: 'bg-blue-600', M: 'bg-purple-600', S: 'bg-pink-600', A: 'bg-cyan-600' };
+
+      container.innerHTML = teamMembers.map(member => {
+        const initial = member.initial || member.name?.[0] || '?';
+        const color = colors[initial] || 'bg-gray-600';
+        const status = member.id === '1' ? 'online' : member.id === '2' ? 'online' : member.id === '3' ? 'away' : 'offline';
+        const statusColors = { online: 'bg-green-400', away: 'bg-yellow-400', offline: 'bg-muted-foreground' };
+
+        return `
+          <div class="flex items-center gap-3 hover:bg-secondary/30 p-2 -mx-2 rounded-lg cursor-pointer transition-colors">
+            <div class="relative">
+              <div class="w-8 h-8 ${color} rounded-full flex items-center justify-center text-sm font-medium">
+                ${initial}
+              </div>
+              <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 ${statusColors[status]} rounded-full border-2 border-card"></span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium truncate">${member.name}</p>
+              <p class="text-xs text-muted-foreground">${member.role}</p>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderStats() {
+      if (!stats) return;
+      // Stats are rendered in HTML, update dynamically if needed
+    }
+
+    function formatTime(dateStr) {
+      if (!dateStr) return '';
+      const date = new Date(dateStr);
+      const now = new Date();
+      const diff = now - date;
+      const minutes = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+      const days = Math.floor(diff / 86400000);
+
+      if (minutes < 60) return `${minutes}분 전`;
+      if (hours < 24) return `${hours}시간 전`;
+      return `${days}일 전`;
+    }
+
+    // Event Handlers
+    function toggleTeamSelector() {
+      const dropdown = document.getElementById('teamDropdown');
+      const arrow = document.getElementById('teamSelectorArrow');
+      dropdown.classList.toggle('hidden');
+      arrow.classList.toggle('rotate-180');
+    }
+
+    document.getElementById('teamSelectorBtn').addEventListener('click', toggleTeamSelector);
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      const dropdown = document.getElementById('teamDropdown');
+      const btn = document.getElementById('teamSelectorBtn');
+      if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
+        dropdown.classList.add('hidden');
+        document.getElementById('teamSelectorArrow').classList.remove('rotate-180');
+      }
+    });
+
+    // Activity filters
+    document.querySelectorAll('.activity-filter').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.activity-filter').forEach(b => {
+          b.classList.remove('bg-primary/20', 'text-primary');
+          b.classList.add('bg-secondary', 'text-muted-foreground');
+        });
+        btn.classList.remove('bg-secondary', 'text-muted-foreground');
+        btn.classList.add('bg-primary/20', 'text-primary');
+        renderActivities(btn.dataset.filter);
+      });
+    });
+
+    // Modal handlers
+    function openSyncModal() {
+      document.getElementById('syncModal').classList.remove('hidden');
+    }
+
+    function closeSyncModal() {
+      document.getElementById('syncModal').classList.add('hidden');
+    }
+
+    function openNewRuleModal() {
+      document.getElementById('newRuleModal').classList.remove('hidden');
+    }
+
+    function closeNewRuleModal() {
+      document.getElementById('newRuleModal').classList.add('hidden');
+    }
+
+    // Sync functionality
+    document.querySelectorAll('.sync-option').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const platform = btn.dataset.platform;
+        btn.classList.add('ring-2', 'ring-primary');
+        setTimeout(() => {
+          btn.classList.remove('ring-2', 'ring-primary');
+          showToast(`${platform} 동기화 완료!`, 'success');
+        }, 1000);
+      });
+    });
+
+    document.getElementById('syncAllBtn').addEventListener('click', () => {
+      const btn = document.getElementById('syncAllBtn');
+      btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> 동기화 중...';
+
+      setTimeout(() => {
+        btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 완료!';
+        showToast('모든 플랫폼 동기화 완료!', 'success');
+
+        setTimeout(() => {
+          btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> 모든 플랫폼 동기화';
+          closeSyncModal();
+        }, 1500);
+      }, 2000);
+    });
+
+    // Form submission
+    document.getElementById('newRuleForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const isProposal = formData.get('createProposal');
+
+      showToast(isProposal ? '제안이 생성되었습니다!' : '규칙이 생성되었습니다!', 'success');
+      closeNewRuleModal();
+      e.target.reset();
+    });
+
+    // Toast notification
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const colors = {
+        success: 'bg-green-500',
+        error: 'bg-red-500',
+        info: 'bg-blue-500',
+        warning: 'bg-yellow-500'
+      };
+
+      const toast = document.createElement('div');
+      toast.className = `toast ${colors[type]} text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2`;
+      toast.innerHTML = `
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${type === 'success' ? 'M5 13l4 4L19 7' : 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'}"/>
+        </svg>
+        ${message}
+      `;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(20px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        document.getElementById('globalSearch').focus();
+      }
+      if (e.key === 'Escape') {
+        closeSyncModal();
+        closeNewRuleModal();
+      }
+    });
+
+    // Load data from API
+    async function loadData() {
+      try {
+        // Load all data in parallel
+        const [activityData, tagsData, membersData, statsData] = await Promise.all([
+          api(`/teams/${TEAM_ID}/analytics/activity?limit=5`),
+          api(`/teams/${TEAM_ID}/analytics/tags`),
+          api(`/teams/${TEAM_ID}/members`),
+          api(`/teams/${TEAM_ID}/analytics/overview?period=30`)
+        ]);
+
+        activities = activityData || [];
+        tags = tagsData || [];
+        teamMembers = membersData || [];
+        stats = statsData || null;
+
+        renderActivities();
+        renderTags();
+        renderTeamMembers();
+        renderStats();
+
+        console.log('Data loaded from API');
+      } catch (error) {
+        console.error('Failed to load data:', error);
+        showToast('데이터를 불러오는데 실패했습니다.', 'error');
+      }
+    }
+
+    // Initialize
+    loadData();
+  </script>
+</body>
+</html>

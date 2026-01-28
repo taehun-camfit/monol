@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monol Rulebook - Rules</title>
+  <!-- Monol Design System -->
+  <link rel="stylesheet" href="../../../../monol-design/monol-design.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            background: '#0a0a0a',
+            foreground: '#fafafa',
+            card: '#171717',
+            'card-foreground': '#fafafa',
+            primary: '#f97316',
+            'primary-foreground': '#fafafa',
+            secondary: '#262626',
+            'secondary-foreground': '#fafafa',
+            muted: '#262626',
+            'muted-foreground': '#a3a3a3',
+            accent: '#262626',
+            'accent-foreground': '#fafafa',
+            border: '#262626',
+            input: '#262626',
+            ring: '#f97316',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .sidebar-item:hover { background: #262626; }
+    .sidebar-item.active { background: #262626; color: #f97316; }
+    .rule-card { transition: all 0.2s; }
+    .rule-card:hover { background: #1f1f1f; border-color: #404040; }
+    .rule-card.selected { border-color: #f97316; background: rgba(249, 115, 22, 0.05); }
+    .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: all 0.15s; }
+    .tag:hover { filter: brightness(1.2); }
+    .filter-chip { transition: all 0.15s; }
+    .filter-chip:hover { background: #333; }
+    .filter-chip.active { background: #f97316 !important; color: white !important; border-color: #f97316 !important; }
+    .fade-in { animation: fadeIn 0.3s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .view-toggle button.active { background: #f97316; color: white; }
+    .checkbox-custom { appearance: none; width: 18px; height: 18px; border: 2px solid #404040; border-radius: 4px; cursor: pointer; transition: all 0.15s; position: relative; }
+    .checkbox-custom:checked { background: #f97316; border-color: #f97316; }
+    .checkbox-custom:checked::after { content: ''; position: absolute; left: 5px; top: 2px; width: 5px; height: 9px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+    .toast { animation: toastSlide 0.3s ease-out; }
+    @keyframes toastSlide { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+    .empty-state { animation: fadeIn 0.5s ease-out; }
+    .loading-skeleton { background: linear-gradient(90deg, #262626 25%, #333 50%, #262626 75%); background-size: 200% 100%; animation: skeleton 1.5s infinite; }
+    @keyframes skeleton { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  </style>
+</head>
+<body class="bg-background text-foreground min-h-screen">
+  <div class="flex h-screen">
+    <!-- Sidebar -->
+    <aside class="w-64 border-r border-border flex flex-col">
+      <div class="p-4 border-b border-border">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold">R</div>
+          <span class="font-semibold">Rulebook</span>
+          <span class="ml-auto text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded">v0.3.5</span>
+        </div>
+        <button class="mt-3 w-full flex items-center justify-between px-3 py-2 bg-secondary rounded-lg text-sm hover:bg-secondary/80 transition-colors">
+          <div class="flex items-center gap-2">
+            <div class="w-5 h-5 bg-cyan-600 rounded flex items-center justify-center text-xs font-medium">F</div>
+            <span>Frontend Team</span>
+          </div>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+      </div>
+
+      <nav class="flex-1 p-2">
+        <a href="index.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+          </svg>
+          홈
+        </a>
+        <a href="rules.html" class="sidebar-item active flex items-center gap-3 px-3 py-2 rounded-lg text-sm">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          규칙
+          <span class="ml-auto text-xs bg-secondary px-2 py-0.5 rounded-full" id="totalCount">42</span>
+        </a>
+        <a href="proposals.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          </svg>
+          제안
+          <span class="ml-auto bg-primary text-xs px-2 py-0.5 rounded-full">3</span>
+        </a>
+        <a href="marketplace.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+          </svg>
+          마켓플레이스
+        </a>
+        <a href="analytics.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+          분석
+        </a>
+        <a href="insights.html" class="sidebar-item flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+          </svg>
+          AI 인사이트
+          <span class="ml-auto text-xs px-2 py-0.5 rounded-full text-white" style="background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);">AI</span>
+        </a>
+      </nav>
+
+      <div class="p-4 border-t border-border">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-sm font-medium relative">
+            K
+            <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-background"></span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium truncate">Kent</p>
+            <p class="text-xs text-muted-foreground truncate">Admin</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto">
+      <div class="p-6">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h1 class="text-2xl font-semibold">규칙</h1>
+            <p class="text-muted-foreground">팀의 모든 규칙을 관리합니다</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button class="px-4 py-2 bg-secondary text-muted-foreground rounded-lg text-sm hover:bg-secondary/80 transition-colors flex items-center gap-2" onclick="exportRules()">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+              </svg>
+              내보내기
+            </button>
+            <button class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-2" onclick="location.href='index.html'">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+              </svg>
+              새 규칙
+            </button>
+          </div>
+        </div>
+
+        <!-- Search & Filters -->
+        <div class="bg-card border border-border rounded-lg p-4 mb-6">
+          <div class="flex gap-4 mb-4">
+            <div class="flex-1 relative">
+              <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+              <input type="text" id="searchInput" placeholder="규칙 검색... (ID, 이름, 설명, 태그)" class="w-full pl-10 pr-10 py-2.5 bg-secondary border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+              <button id="clearSearch" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+            <div class="view-toggle flex bg-secondary rounded-lg p-1">
+              <button class="view-btn active px-3 py-1.5 rounded text-sm flex items-center gap-1" data-view="list">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+              </button>
+              <button class="view-btn px-3 py-1.5 rounded text-sm flex items-center gap-1" data-view="grid">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-4">
+            <!-- Severity Filters -->
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-muted-foreground">심각도:</span>
+              <div class="flex gap-1">
+                <button class="filter-chip severity-filter active px-3 py-1 rounded-full text-xs border border-border" data-severity="all">전체</button>
+                <button class="filter-chip severity-filter px-3 py-1 rounded-full text-xs border border-red-500/50 text-red-400 hover:bg-red-500/20" data-severity="error">Error</button>
+                <button class="filter-chip severity-filter px-3 py-1 rounded-full text-xs border border-yellow-500/50 text-yellow-400 hover:bg-yellow-500/20" data-severity="warning">Warning</button>
+                <button class="filter-chip severity-filter px-3 py-1 rounded-full text-xs border border-blue-500/50 text-blue-400 hover:bg-blue-500/20" data-severity="info">Info</button>
+              </div>
+            </div>
+
+            <!-- Category Filter -->
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-muted-foreground">카테고리:</span>
+              <select id="categoryFilter" class="px-3 py-1 bg-secondary border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="all">전체</option>
+                <option value="code/naming">Code / Naming</option>
+                <option value="code/style">Code / Style</option>
+                <option value="code/security">Code / Security</option>
+                <option value="workflow/git">Workflow / Git</option>
+                <option value="workflow/planning">Workflow / Planning</option>
+              </select>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-muted-foreground">상태:</span>
+              <div class="flex gap-1">
+                <button class="filter-chip status-filter active px-3 py-1 rounded-full text-xs border border-border" data-status="all">전체</button>
+                <button class="filter-chip status-filter px-3 py-1 rounded-full text-xs border border-green-500/50 text-green-400 hover:bg-green-500/20" data-status="active">활성</button>
+                <button class="filter-chip status-filter px-3 py-1 rounded-full text-xs border border-muted-foreground/50 text-muted-foreground hover:bg-muted/50" data-status="deprecated">비활성</button>
+              </div>
+            </div>
+
+            <!-- Sort -->
+            <div class="flex items-center gap-2 ml-auto">
+              <span class="text-xs text-muted-foreground">정렬:</span>
+              <select id="sortFilter" class="px-3 py-1 bg-secondary border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="updated">최근 수정</option>
+                <option value="name">이름순</option>
+                <option value="severity">심각도순</option>
+                <option value="usage">사용량순</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Active Tag Filters -->
+          <div id="activeTagFilters" class="hidden flex flex-wrap gap-2 mt-4 pt-4 border-t border-border">
+            <span class="text-xs text-muted-foreground">태그 필터:</span>
+          </div>
+        </div>
+
+        <!-- Bulk Actions -->
+        <div id="bulkActions" class="hidden bg-primary/10 border border-primary/30 rounded-lg p-3 mb-4 flex items-center justify-between fade-in">
+          <div class="flex items-center gap-3">
+            <span class="text-sm"><span id="selectedCount" class="font-semibold text-primary">0</span>개 선택됨</span>
+            <button class="text-xs text-muted-foreground hover:text-foreground" onclick="clearSelection()">선택 해제</button>
+          </div>
+          <div class="flex gap-2">
+            <button class="px-3 py-1.5 bg-secondary rounded-lg text-sm hover:bg-secondary/80 flex items-center gap-1" onclick="bulkExport()">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+              </svg>
+              내보내기
+            </button>
+            <button class="px-3 py-1.5 bg-yellow-500/20 text-yellow-400 rounded-lg text-sm hover:bg-yellow-500/30 flex items-center gap-1" onclick="bulkDeprecate()">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+              </svg>
+              비활성화
+            </button>
+            <button class="px-3 py-1.5 bg-red-500/20 text-red-400 rounded-lg text-sm hover:bg-red-500/30 flex items-center gap-1" onclick="bulkDelete()">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+              삭제
+            </button>
+          </div>
+        </div>
+
+        <!-- Results Header -->
+        <div class="flex items-center justify-between mb-4">
+          <p class="text-sm text-muted-foreground">
+            <span id="resultCount">0</span>개의 규칙
+          </p>
+          <label class="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer hover:text-foreground transition-colors">
+            <input type="checkbox" id="selectAll" class="checkbox-custom">
+            전체 선택
+          </label>
+        </div>
+
+        <!-- Rules List -->
+        <div id="rulesList" class="space-y-3">
+          <!-- Rules will be rendered here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden empty-state text-center py-16">
+          <div class="w-16 h-16 bg-secondary rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-medium mb-2">검색 결과가 없습니다</h3>
+          <p class="text-muted-foreground mb-4">다른 키워드나 필터를 시도해보세요</p>
+          <button class="px-4 py-2 bg-primary text-white rounded-lg text-sm" onclick="resetFilters()">필터 초기화</button>
+        </div>
+
+        <!-- Pagination -->
+        <div id="pagination" class="flex items-center justify-between mt-6 pt-6 border-t border-border">
+          <p class="text-sm text-muted-foreground"><span id="pageInfo">1-10</span> / <span id="totalItems">0</span>개</p>
+          <div class="flex gap-1" id="pageButtons">
+            <!-- Pagination buttons will be rendered here -->
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+
+  <script type="module">
+    // API Configuration
+    const API_BASE = 'http://localhost:3001/api';
+    const TEAM_ID = '1';
+
+    // API Helper
+    async function api(endpoint, options = {}) {
+      try {
+        const response = await fetch(`${API_BASE}${endpoint}`, {
+          headers: { 'Content-Type': 'application/json', ...options.headers },
+          ...options
+        });
+        const data = await response.json();
+        if (!data.success) throw new Error(data.error?.message || 'API Error');
+        return data;
+      } catch (error) {
+        console.error('API Error:', error);
+        throw error;
+      }
+    }
+
+    // Format time helper
+    function formatTime(dateString) {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+
+      if (diffMins < 60) return `${diffMins}분 전`;
+      if (diffHours < 24) return `${diffHours}시간 전`;
+      if (diffDays < 7) return `${diffDays}일 전`;
+      if (diffDays < 30) return `${Math.floor(diffDays / 7)}주 전`;
+      return `${Math.floor(diffDays / 30)}개월 전`;
+    }
+
+    // Mock rules data (will be replaced by API)
+    const mockRules = [
+      {
+        id: 'naming-001',
+        name: '변수명 규칙',
+        description: '변수명은 camelCase를 사용합니다. 상수는 SCREAMING_SNAKE_CASE, 클래스는 PascalCase를 사용합니다.',
+        category: 'code/naming',
+        severity: 'warning',
+        tags: ['naming', 'style', 'variables'],
+        author: { name: 'Kent', avatar: 'K', color: 'bg-green-600' },
+        updatedAt: '2시간 전',
+        usageCount: 156,
+        compliance: 89,
+        status: 'active',
+        version: 'v1.2.0'
+      },
+      {
+        id: 'security-001',
+        name: 'SQL Injection 방지',
+        description: '모든 데이터베이스 쿼리에서 파라미터 바인딩을 사용해야 합니다. 문자열 연결로 쿼리를 만들지 마세요.',
+        category: 'code/security',
+        severity: 'error',
+        tags: ['security', 'database', 'sql'],
+        author: { name: 'Jason', avatar: 'J', color: 'bg-blue-600' },
+        updatedAt: '1일 전',
+        usageCount: 234,
+        compliance: 95,
+        status: 'active',
+        version: 'v2.0.0'
+      },
+      {
+        id: 'style-001',
+        name: '코드 포맷팅',
+        description: '들여쓰기는 2칸 스페이스를 사용하며, Prettier 설정을 따릅니다. 세미콜론은 필수입니다.',
+        category: 'code/style',
+        severity: 'warning',
+        tags: ['style', 'formatting', 'prettier'],
+        author: { name: 'Mike', avatar: 'M', color: 'bg-purple-600' },
+        updatedAt: '3일 전',
+        usageCount: 189,
+        compliance: 92,
+        status: 'active',
+        version: 'v1.0.0'
+      },
+      {
+        id: 'git-001',
+        name: '커밋 메시지 규칙',
+        description: 'Conventional Commits 형식을 따릅니다. feat, fix, docs, style, refactor, test, chore 타입을 사용합니다.',
+        category: 'workflow/git',
+        severity: 'error',
+        tags: ['git', 'commit', 'workflow'],
+        author: { name: 'Sarah', avatar: 'S', color: 'bg-pink-600' },
+        updatedAt: '1주 전',
+        usageCount: 312,
+        compliance: 97,
+        status: 'active',
+        version: 'v2.0.0'
+      },
+      {
+        id: 'naming-002',
+        name: 'React 컴포넌트 네이밍',
+        description: 'React 컴포넌트는 PascalCase를 사용하고, 파일명도 컴포넌트명과 일치하게 PascalCase로 작성합니다.',
+        category: 'code/naming',
+        severity: 'warning',
+        tags: ['naming', 'react', 'component'],
+        author: { name: 'Kent', avatar: 'K', color: 'bg-green-600' },
+        updatedAt: '2주 전',
+        usageCount: 145,
+        compliance: 88,
+        status: 'active',
+        version: 'v1.1.0'
+      },
+      {
+        id: 'security-002',
+        name: 'XSS 방지 규칙',
+        description: '사용자 입력값은 항상 이스케이프 처리하고, dangerouslySetInnerHTML 사용을 최소화합니다.',
+        category: 'code/security',
+        severity: 'error',
+        tags: ['security', 'xss', 'react'],
+        author: { name: 'Jason', avatar: 'J', color: 'bg-blue-600' },
+        updatedAt: '3주 전',
+        usageCount: 198,
+        compliance: 94,
+        status: 'active',
+        version: 'v1.0.0'
+      },
+      {
+        id: 'api-001',
+        name: 'API 에러 핸들링',
+        description: '모든 API 호출은 try-catch로 감싸고, 사용자에게 적절한 피드백을 제공합니다. 재시도 로직을 구현합니다.',
+        category: 'code/style',
+        severity: 'warning',
+        tags: ['api', 'error-handling', 'async'],
+        author: { name: 'Mike', avatar: 'M', color: 'bg-purple-600' },
+        updatedAt: '1개월 전',
+        usageCount: 167,
+        compliance: 78,
+        status: 'active',
+        version: 'v1.5.0'
+      },
+      {
+        id: 'planning-001',
+        name: '시나리오 기반 플래닝',
+        description: '새로운 기능 구현 전에 반드시 활용 시나리오 10개를 작성하고, 엣지 케이스를 도출합니다.',
+        category: 'workflow/planning',
+        severity: 'info',
+        tags: ['planning', 'workflow', 'design'],
+        author: { name: 'Sarah', avatar: 'S', color: 'bg-pink-600' },
+        updatedAt: '1개월 전',
+        usageCount: 89,
+        compliance: 67,
+        status: 'active',
+        version: 'v1.0.0'
+      },
+      {
+        id: 'naming-003',
+        name: '파일명 규칙 (레거시)',
+        description: '파일명은 kebab-case를 사용합니다. 예: user-service.ts. 이 규칙은 더 이상 사용하지 않습니다.',
+        category: 'code/naming',
+        severity: 'info',
+        tags: ['naming', 'files', 'legacy'],
+        author: { name: 'Kent', avatar: 'K', color: 'bg-green-600' },
+        updatedAt: '2개월 전',
+        usageCount: 45,
+        compliance: 0,
+        status: 'deprecated',
+        version: 'v0.9.0'
+      },
+      {
+        id: 'perf-001',
+        name: '이미지 최적화',
+        description: '모든 이미지는 WebP 포맷으로 변환하고, lazy loading을 적용합니다. 크기별 srcset을 제공합니다.',
+        category: 'code/style',
+        severity: 'warning',
+        tags: ['performance', 'images', 'optimization'],
+        author: { name: 'Mike', avatar: 'M', color: 'bg-purple-600' },
+        updatedAt: '2개월 전',
+        usageCount: 76,
+        compliance: 71,
+        status: 'active',
+        version: 'v1.0.0'
+      }
+    ];
+
+    // State
+    let rules = [];
+    let totalRules = 0;
+    let selectedRules = new Set();
+    let currentView = 'list';
+    let activeTags = new Set();
+    let currentPage = 1;
+    const itemsPerPage = 5;
+    let currentFilters = {
+      search: '',
+      severity: 'all',
+      category: 'all',
+      status: 'all',
+      sort: 'updated'
+    };
+    let isLoading = false;
+
+    // Load rules from API
+    async function loadRules() {
+      if (isLoading) return;
+      isLoading = true;
+      showLoadingState();
+
+      try {
+        // Build query params
+        const params = new URLSearchParams();
+        if (currentFilters.search) params.set('search', currentFilters.search);
+        if (currentFilters.severity !== 'all') params.set('severity', currentFilters.severity);
+        if (currentFilters.category !== 'all') params.set('category', currentFilters.category);
+        if (currentFilters.status !== 'all') params.set('status', currentFilters.status);
+        if (activeTags.size > 0) params.set('tags', [...activeTags].join(','));
+        if (currentFilters.sort !== 'updated') params.set('sort', currentFilters.sort);
+        params.set('page', currentPage);
+        params.set('limit', itemsPerPage);
+
+        const queryString = params.toString();
+        const response = await api(`/teams/${TEAM_ID}/rules${queryString ? '?' + queryString : ''}`);
+
+        rules = response.data.map(rule => ({
+          ...rule,
+          id: rule.ruleId || rule.id,
+          updatedAt: formatTime(rule.updatedAt),
+          usageCount: rule.usageCount || Math.floor(Math.random() * 200) + 50,
+          compliance: rule.compliance || Math.floor(Math.random() * 30) + 70
+        }));
+        totalRules = response.pagination?.total || rules.length;
+
+        renderRules();
+      } catch (error) {
+        showToast('규칙 로드 실패: ' + error.message, 'error');
+        // Fallback to mock data
+        rules = mockRules;
+        totalRules = mockRules.length;
+        renderRules();
+      } finally {
+        isLoading = false;
+      }
+    }
+
+    function showLoadingState() {
+      const list = document.getElementById('rulesList');
+      list.innerHTML = Array(3).fill(`
+        <div class="bg-card border border-border rounded-lg p-4">
+          <div class="flex items-start gap-4">
+            <div class="loading-skeleton w-10 h-10 rounded-lg"></div>
+            <div class="flex-1">
+              <div class="loading-skeleton h-5 w-32 rounded mb-2"></div>
+              <div class="loading-skeleton h-4 w-48 rounded mb-2"></div>
+              <div class="loading-skeleton h-3 w-full rounded"></div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Severity config
+    const severityConfig = {
+      error: { label: '필수', color: 'bg-red-500/20 text-red-400', icon: '🔴' },
+      warning: { label: '권장', color: 'bg-yellow-500/20 text-yellow-400', icon: '🟡' },
+      info: { label: '참고', color: 'bg-blue-500/20 text-blue-400', icon: '🔵' }
+    };
+
+    // Filter rules
+    function getFilteredRules() {
+      let filtered = [...rules];
+
+      // Search
+      if (currentFilters.search) {
+        const search = currentFilters.search.toLowerCase();
+        filtered = filtered.filter(r =>
+          r.id.toLowerCase().includes(search) ||
+          r.name.toLowerCase().includes(search) ||
+          r.description.toLowerCase().includes(search) ||
+          r.tags.some(t => t.toLowerCase().includes(search))
+        );
+      }
+
+      // Severity
+      if (currentFilters.severity !== 'all') {
+        filtered = filtered.filter(r => r.severity === currentFilters.severity);
+      }
+
+      // Category
+      if (currentFilters.category !== 'all') {
+        filtered = filtered.filter(r => r.category === currentFilters.category);
+      }
+
+      // Status
+      if (currentFilters.status !== 'all') {
+        filtered = filtered.filter(r => r.status === currentFilters.status);
+      }
+
+      // Tags
+      if (activeTags.size > 0) {
+        filtered = filtered.filter(r => r.tags.some(t => activeTags.has(t)));
+      }
+
+      // Sort
+      filtered.sort((a, b) => {
+        switch (currentFilters.sort) {
+          case 'name': return a.name.localeCompare(b.name);
+          case 'severity': {
+            const order = { error: 0, warning: 1, info: 2 };
+            return order[a.severity] - order[b.severity];
+          }
+          case 'usage': return b.usageCount - a.usageCount;
+          default: return 0; // Keep original order for 'updated'
+        }
+      });
+
+      return filtered;
+    }
+
+    // Render rules (API already returns filtered/paginated data)
+    function renderRules() {
+      const list = document.getElementById('rulesList');
+      const emptyState = document.getElementById('emptyState');
+      const pagination = document.getElementById('pagination');
+
+      const totalPages = Math.ceil(totalRules / itemsPerPage);
+      const startIdx = (currentPage - 1) * itemsPerPage;
+
+      // Update counts
+      document.getElementById('resultCount').textContent = totalRules;
+      document.getElementById('totalCount').textContent = totalRules;
+      document.getElementById('totalItems').textContent = totalRules;
+      document.getElementById('pageInfo').textContent = totalRules > 0
+        ? `${startIdx + 1}-${Math.min(startIdx + itemsPerPage, totalRules)}`
+        : '0';
+
+      // Show/hide empty state
+      if (rules.length === 0) {
+        list.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        pagination.classList.add('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      pagination.classList.remove('hidden');
+
+      // Render based on view
+      if (currentView === 'list') {
+        list.className = 'space-y-3';
+        list.innerHTML = rules.map(rule => renderListItem(rule)).join('');
+      } else {
+        list.className = 'grid grid-cols-2 gap-4';
+        list.innerHTML = rules.map(rule => renderGridItem(rule)).join('');
+      }
+
+      // Render pagination
+      renderPagination(totalPages);
+      updateBulkActions();
+    }
+
+    function renderListItem(rule) {
+      const sev = severityConfig[rule.severity];
+      const complianceColor = rule.compliance >= 90 ? 'text-green-400' : rule.compliance >= 70 ? 'text-yellow-400' : 'text-red-400';
+
+      return `
+        <div class="rule-card fade-in bg-card border border-border rounded-lg p-4 cursor-pointer ${selectedRules.has(rule.id) ? 'selected' : ''} ${rule.status === 'deprecated' ? 'opacity-60' : ''}"
+             data-id="${rule.id}" onclick="handleRuleClick(event, '${rule.id}')">
+          <div class="flex items-start gap-4">
+            <input type="checkbox" class="checkbox-custom mt-1 rule-checkbox" ${selectedRules.has(rule.id) ? 'checked' : ''}
+                   onclick="event.stopPropagation(); toggleSelect('${rule.id}')">
+            <div class="flex-shrink-0">
+              <span class="inline-flex items-center justify-center w-10 h-10 rounded-lg ${sev.color.split(' ')[0]} text-lg">${sev.icon}</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <h3 class="font-semibold">${rule.id}</h3>
+                <span class="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded">${rule.version}</span>
+                ${rule.status === 'deprecated' ? '<span class="tag bg-muted text-muted-foreground">비활성</span>' : ''}
+              </div>
+              <p class="text-base font-medium mb-1">${rule.name}</p>
+              <p class="text-sm text-muted-foreground mb-3 line-clamp-2">${rule.description}</p>
+              <div class="flex flex-wrap gap-1">
+                ${rule.tags.map(tag => `
+                  <span class="text-xs px-2 py-0.5 bg-secondary rounded-full hover:bg-secondary/80 cursor-pointer transition-colors ${activeTags.has(tag) ? 'ring-1 ring-primary' : ''}"
+                        onclick="event.stopPropagation(); toggleTagFilter('${tag}')">${tag}</span>
+                `).join('')}
+              </div>
+            </div>
+            <div class="flex-shrink-0 text-right">
+              <div class="flex items-center gap-3 text-sm text-muted-foreground mb-2">
+                <span class="flex items-center gap-1" title="사용 횟수">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                  </svg>
+                  ${rule.usageCount}
+                </span>
+                <span class="flex items-center gap-1 ${complianceColor}" title="준수율">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  ${rule.compliance}%
+                </span>
+              </div>
+              <div class="flex items-center gap-2 justify-end">
+                <div class="w-6 h-6 ${rule.author.color} rounded-full flex items-center justify-center text-xs">${rule.author.avatar}</div>
+                <span class="text-xs text-muted-foreground">${rule.author.name} · ${rule.updatedAt}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderGridItem(rule) {
+      const sev = severityConfig[rule.severity];
+      const complianceColor = rule.compliance >= 90 ? 'text-green-400' : rule.compliance >= 70 ? 'text-yellow-400' : 'text-red-400';
+
+      return `
+        <div class="rule-card fade-in bg-card border border-border rounded-lg p-4 cursor-pointer ${selectedRules.has(rule.id) ? 'selected' : ''} ${rule.status === 'deprecated' ? 'opacity-60' : ''}"
+             data-id="${rule.id}" onclick="handleRuleClick(event, '${rule.id}')">
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <span class="tag ${sev.color}">${sev.label}</span>
+              ${rule.status === 'deprecated' ? '<span class="tag bg-muted text-muted-foreground">비활성</span>' : ''}
+            </div>
+            <input type="checkbox" class="checkbox-custom rule-checkbox" ${selectedRules.has(rule.id) ? 'checked' : ''}
+                   onclick="event.stopPropagation(); toggleSelect('${rule.id}')">
+          </div>
+          <h3 class="font-semibold text-sm mb-1">${rule.id}</h3>
+          <p class="font-medium mb-2">${rule.name}</p>
+          <p class="text-sm text-muted-foreground mb-3 line-clamp-2">${rule.description}</p>
+          <div class="flex flex-wrap gap-1 mb-3">
+            ${rule.tags.slice(0, 3).map(tag => `<span class="text-xs px-2 py-0.5 bg-secondary rounded-full">${tag}</span>`).join('')}
+            ${rule.tags.length > 3 ? `<span class="text-xs px-2 py-0.5 bg-secondary rounded-full">+${rule.tags.length - 3}</span>` : ''}
+          </div>
+          <div class="flex items-center justify-between text-xs text-muted-foreground pt-3 border-t border-border">
+            <div class="flex items-center gap-1">
+              <div class="w-5 h-5 ${rule.author.color} rounded-full flex items-center justify-center text-xs">${rule.author.avatar}</div>
+              <span>${rule.author.name}</span>
+            </div>
+            <span class="${complianceColor}">${rule.compliance}%</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderPagination(totalPages) {
+      const container = document.getElementById('pageButtons');
+      let html = '';
+
+      html += `<button class="px-3 py-1.5 bg-secondary rounded-lg text-sm ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-secondary/80'}"
+                       ${currentPage === 1 ? 'disabled' : ''} onclick="goToPage(${currentPage - 1})">이전</button>`;
+
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+          html += `<button class="px-3 py-1.5 rounded-lg text-sm ${i === currentPage ? 'bg-primary text-white' : 'bg-secondary hover:bg-secondary/80'}"
+                           onclick="goToPage(${i})">${i}</button>`;
+        } else if (i === currentPage - 2 || i === currentPage + 2) {
+          html += `<span class="px-2 py-1.5 text-muted-foreground">...</span>`;
+        }
+      }
+
+      html += `<button class="px-3 py-1.5 bg-secondary rounded-lg text-sm ${currentPage === totalPages || totalPages === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-secondary/80'}"
+                       ${currentPage === totalPages || totalPages === 0 ? 'disabled' : ''} onclick="goToPage(${currentPage + 1})">다음</button>`;
+
+      container.innerHTML = html;
+    }
+
+    // Event handlers
+    function handleRuleClick(event, id) {
+      if (event.target.classList.contains('checkbox-custom') || event.target.closest('.tag')) return;
+      location.href = `rule-detail.html?id=${id}`;
+    }
+
+    function toggleSelect(id) {
+      if (selectedRules.has(id)) {
+        selectedRules.delete(id);
+      } else {
+        selectedRules.add(id);
+      }
+      renderRules();
+    }
+
+    function clearSelection() {
+      selectedRules.clear();
+      document.getElementById('selectAll').checked = false;
+      renderRules();
+    }
+
+    function toggleTagFilter(tag) {
+      if (activeTags.has(tag)) {
+        activeTags.delete(tag);
+      } else {
+        activeTags.add(tag);
+      }
+      currentPage = 1;
+      updateActiveTagFilters();
+      loadRules();
+    }
+
+    function updateActiveTagFilters() {
+      const container = document.getElementById('activeTagFilters');
+      if (activeTags.size === 0) {
+        container.classList.add('hidden');
+        return;
+      }
+
+      container.classList.remove('hidden');
+      container.innerHTML = `
+        <span class="text-xs text-muted-foreground">태그 필터:</span>
+        ${[...activeTags].map(tag => `
+          <span class="tag bg-primary/20 text-primary cursor-pointer" onclick="toggleTagFilter('${tag}')">
+            ${tag}
+            <svg class="w-3 h-3 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </span>
+        `).join('')}
+        <button class="text-xs text-muted-foreground hover:text-foreground ml-2" onclick="clearTagFilters()">모두 제거</button>
+      `;
+    }
+
+    function clearTagFilters() {
+      activeTags.clear();
+      currentPage = 1;
+      updateActiveTagFilters();
+      loadRules();
+    }
+
+    function updateBulkActions() {
+      const bulkActions = document.getElementById('bulkActions');
+      const selectedCount = document.getElementById('selectedCount');
+      const selectAll = document.getElementById('selectAll');
+
+      if (selectedRules.size > 0) {
+        bulkActions.classList.remove('hidden');
+        selectedCount.textContent = selectedRules.size;
+      } else {
+        bulkActions.classList.add('hidden');
+      }
+
+      selectAll.checked = selectedRules.size > 0 && selectedRules.size === rules.length;
+    }
+
+    function goToPage(page) {
+      const totalPages = Math.ceil(totalRules / itemsPerPage);
+      if (page < 1 || page > totalPages) return;
+      currentPage = page;
+      loadRules();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetFilters() {
+      currentFilters = { search: '', severity: 'all', category: 'all', status: 'all', sort: 'updated' };
+      activeTags.clear();
+      currentPage = 1;
+
+      document.getElementById('searchInput').value = '';
+      document.getElementById('categoryFilter').value = 'all';
+      document.getElementById('sortFilter').value = 'updated';
+
+      document.querySelectorAll('.severity-filter').forEach(b => b.classList.remove('active'));
+      document.querySelector('.severity-filter[data-severity="all"]').classList.add('active');
+
+      document.querySelectorAll('.status-filter').forEach(b => b.classList.remove('active'));
+      document.querySelector('.status-filter[data-status="all"]').classList.add('active');
+
+      updateActiveTagFilters();
+      loadRules();
+    }
+
+    // Debounce helper
+    function debounce(fn, delay) {
+      let timeoutId;
+      return (...args) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => fn(...args), delay);
+      };
+    }
+
+    // Debounced search
+    const debouncedSearch = debounce(() => {
+      currentPage = 1;
+      loadRules();
+    }, 300);
+
+    // Event listeners
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      currentFilters.search = e.target.value;
+      document.getElementById('clearSearch').classList.toggle('hidden', !e.target.value);
+      debouncedSearch();
+    });
+
+    document.getElementById('clearSearch').addEventListener('click', () => {
+      document.getElementById('searchInput').value = '';
+      currentFilters.search = '';
+      document.getElementById('clearSearch').classList.add('hidden');
+      currentPage = 1;
+      loadRules();
+    });
+
+    document.querySelectorAll('.severity-filter').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.severity-filter').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilters.severity = btn.dataset.severity;
+        currentPage = 1;
+        loadRules();
+      });
+    });
+
+    document.querySelectorAll('.status-filter').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.status-filter').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilters.status = btn.dataset.status;
+        currentPage = 1;
+        loadRules();
+      });
+    });
+
+    document.getElementById('categoryFilter').addEventListener('change', (e) => {
+      currentFilters.category = e.target.value;
+      currentPage = 1;
+      loadRules();
+    });
+
+    document.getElementById('sortFilter').addEventListener('change', (e) => {
+      currentFilters.sort = e.target.value;
+      loadRules();
+    });
+
+    document.querySelectorAll('.view-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentView = btn.dataset.view;
+        renderRules(); // Just re-render, no API call needed
+      });
+    });
+
+    document.getElementById('selectAll').addEventListener('change', (e) => {
+      if (e.target.checked) {
+        rules.forEach(r => selectedRules.add(r.id));
+      } else {
+        selectedRules.clear();
+      }
+      renderRules(); // Just re-render, no API call needed
+    });
+
+    // Bulk actions
+    function bulkExport() {
+      showToast(`${selectedRules.size}개 규칙 YAML로 내보내기 완료`, 'success');
+      clearSelection();
+    }
+
+    function bulkDeprecate() {
+      showToast(`${selectedRules.size}개 규칙 비활성화됨`, 'warning');
+      clearSelection();
+    }
+
+    function bulkDelete() {
+      if (confirm(`정말 ${selectedRules.size}개 규칙을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) {
+        showToast(`${selectedRules.size}개 규칙 삭제됨`, 'error');
+        clearSelection();
+      }
+    }
+
+    function exportRules() {
+      showToast('전체 규칙 YAML로 내보내기 완료', 'success');
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const colors = {
+        success: 'bg-green-500',
+        error: 'bg-red-500',
+        info: 'bg-blue-500',
+        warning: 'bg-yellow-500'
+      };
+
+      const icons = {
+        success: 'M5 13l4 4L19 7',
+        error: 'M6 18L18 6M6 6l12 12',
+        info: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+        warning: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z'
+      };
+
+      const toast = document.createElement('div');
+      toast.className = `toast ${colors[type]} text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 min-w-[280px]`;
+      toast.innerHTML = `
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${icons[type]}"/>
+        </svg>
+        <span class="flex-1">${message}</span>
+        <button onclick="this.parentElement.remove()" class="hover:opacity-80">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      `;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        toast.style.transition = 'all 0.3s ease-out';
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    // Expose functions to global scope for onclick handlers
+    window.handleRuleClick = handleRuleClick;
+    window.toggleSelect = toggleSelect;
+    window.clearSelection = clearSelection;
+    window.toggleTagFilter = toggleTagFilter;
+    window.clearTagFilters = clearTagFilters;
+    window.goToPage = goToPage;
+    window.resetFilters = resetFilters;
+    window.bulkExport = bulkExport;
+    window.bulkDeprecate = bulkDeprecate;
+    window.bulkDelete = bulkDelete;
+    window.exportRules = exportRules;
+
+    // Initialize
+    loadRules();
+  </script>
+</body>
+</html>

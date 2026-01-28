@@ -1,53 +1,117 @@
-# Rulebook Index
-# 규칙 인덱스 파일 - 자동 생성됨
-
 metadata:
-  version: "1.0.0"
-  lastUpdated: "2025-01-18T00:00:00Z"
+  version: 1.0.0
+  lastUpdated: 2026-01-18T20:38:20.168Z
   scope: package
-  description: "Monol Rulebook 예시 규칙"
-
-# 카테고리 목록
 categories:
   - id: code
-    name: 코드 규칙
-    description: 코딩 스타일 및 패턴
+    name: code
     ruleCount: 2
     subcategories:
-      - id: code/style
-        name: 스타일
-        ruleCount: 1
       - id: code/naming
-        name: 네이밍
+        name: naming
         ruleCount: 1
-
-  - id: workflow
-    name: 워크플로우 규칙
-    description: Git, CI/CD 관련 규칙
+      - id: code/style
+        name: style
+        ruleCount: 1
+  - id: deploy
+    name: deploy
     ruleCount: 1
-
-# 태그 목록
+    subcategories: []
+  - id: test
+    name: test
+    ruleCount: 1
+    subcategories: []
+  - id: workflow
+    name: workflow
+    ruleCount: 4
+    subcategories:
+      - id: workflow/planning
+        name: planning
+        ruleCount: 1
+      - id: workflow/documentation
+        name: documentation
+        ruleCount: 1
 tags:
-  - naming
-  - variables
-  - style
-  - formatting
-  - git
+  - classes
+  - claude-code
   - commit
-
-# 규칙 참조
+  - conventional-commits
+  - deployment
+  - design
+  - documentation
+  - formatting
+  - functions
+  - git
+  - naming
+  - npm
+  - permissions
+  - planning
+  - plugin
+  - prettier
+  - progress
+  - roadmap
+  - scenario
+  - settings
+  - style
+  - sync
+  - test
+  - variables
 rules:
-  - id: style-001
-    file: code/style.yaml
-    category: code/style
-    tags: [style, formatting]
-
   - id: naming-001
-    file: code/naming.yaml
+    file: naming.yaml
     category: code/naming
-    tags: [naming, variables]
-
+    tags:
+      - naming
+      - variables
+      - functions
+      - classes
+  - id: style-001
+    file: style.yaml
+    category: code/style
+    tags:
+      - style
+      - formatting
+      - prettier
+  - id: deploy-claude-plugin-001
+    file: deploy.yaml
+    category: deploy
+    tags:
+      - claude-code
+      - plugin
+      - npm
+      - deployment
+  - id: test-server-sync-001
+    file: test.yaml
+    category: test
+    tags:
+      - test
+      - sync
   - id: git-001
-    file: workflow/git.yaml
+    file: workflow.yaml
     category: workflow
-    tags: [git, commit]
+    tags:
+      - git
+      - commit
+      - conventional-commits
+  - id: permissions-001
+    file: workflow.yaml
+    category: workflow
+    tags:
+      - permissions
+      - claude-code
+      - settings
+  - id: planning-001
+    file: planning.yaml
+    category: workflow/planning
+    tags:
+      - planning
+      - scenario
+      - design
+  - id: workflow-roadmap-001
+    file: roadmap.yaml
+    category: workflow/documentation
+    tags:
+      - workflow
+      - documentation
+      - roadmap
+      - progress

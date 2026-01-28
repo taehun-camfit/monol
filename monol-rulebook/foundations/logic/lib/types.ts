@@ -496,3 +496,511 @@ export interface RuleEvent {
 export type RuleMap = Map<string, Rule>;
 export type CategoryMap = Map<string, Rule[]>;
 export type TagIndex = Map<string, Set<string>>;
+
+// ============================================================================
+// Team Collaboration Types (Phase 1)
+// ============================================================================
+
+/** 팀 멤버 역할 */
+export type TeamRole = 'owner' | 'admin' | 'member' | 'viewer';
+
+/** 규칙 공개 범위 */
+export type RuleVisibility = 'private' | 'team' | 'public';
+
+/** 제안 타입 */
+export type ProposalType = 'create' | 'update' | 'deprecate' | 'delete';
+
+/** 제안 상태 */
+export type ProposalStatus = 'draft' | 'pending' | 'approved' | 'rejected' | 'merged' | 'cancelled';
+
+/** 리뷰 결정 */
+export type ReviewDecision = 'approve' | 'reject' | 'request_changes' | 'comment';
+
+/** 동기화 방향 */
+export type RemoteSyncDirection = 'push' | 'pull' | 'both';
+
+// ============================================================================
+// User & Auth Types
+// ============================================================================
+
+/** 사용자 정보 */
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  displayName: string;
+  avatarUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** 인증 토큰 정보 */
+export interface AuthToken {
+  accessToken: string;
+  refreshToken?: string;
+  expiresAt: string;
+  tokenType: 'Bearer';
+  scope?: string[];
+}
+
+/** 인증 상태 */
+export interface AuthState {
+  isAuthenticated: boolean;
+  user?: User;
+  token?: AuthToken;
+  lastRefreshed?: string;
+}
+
+// ============================================================================
+// Team Types
+// ============================================================================
+
+/** 팀 설정 */
+export interface TeamSettings {
+  /** 규칙 변경 시 승인 필요 여부 */
+  requireApproval: boolean;
+
+  /** 최소 승인자 수 */
+  minApprovers: number;
+
+  /** 자동 머지 활성화 */
+  autoMerge: boolean;
+
+  /** 기본 규칙 공개 범위 */
+  defaultVisibility: RuleVisibility;
+
+  /** 알림 설정 */
+  notifications: {
+    email: boolean;
+    webhook?: string;
+    slack?: string;
+  };
+}
+
+/** 팀 멤버 */
+export interface TeamMember {
+  userId: string;
+  user: User;
+  role: TeamRole;
+  joinedAt: string;
+  invitedBy?: string;
+}
+
+/** 팀 */
+export interface Team {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  avatarUrl?: string;
+  settings: TeamSettings;
+  members?: TeamMember[];
+  rulesCount?: number;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+}
+
+/** 팀 초대 */
+export interface TeamInvite {
+  id: string;
+  teamId: string;
+  email: string;
+  role: TeamRole;
+  invitedBy: string;
+  expiresAt: string;
+  acceptedAt?: string;
+  createdAt: string;
+}
+
+// ============================================================================
+// Shared Rule Types
+// ============================================================================
+
+/** 규칙 협업 메트릭 */
+export interface RuleCollaboration {
+  /** 포크 횟수 */
+  forkCount: number;
+
+  /** 채택 횟수 */
+  adoptionCount: number;
+
+  /** 좋아요 수 */
+  upvotes: number;
+
+  /** 조회수 */
+  viewCount: number;
+
+  /** 평균 평점 (1-5) */
+  rating?: number;
+
+  /** 리뷰 수 */
+  reviewCount?: number;
+}
+
+/** 규칙 원본 정보 (포크된 경우) */
+export interface RuleOrigin {
+  /** 원본 규칙 ID */
+  ruleId: string;
+
+  /** 원본 팀 ID */
+  teamId: string;
+
+  /** 포크 시점 버전 */
+  forkedVersion: string;
+
+  /** 포크 일시 */
+  forkedAt: string;
+}
+
+/** 공유 규칙 (팀 협업용 확장) */
+export interface SharedRule extends Rule {
+  /** 소속 팀 ID */
+  teamId: string;
+
+  /** 공개 범위 */
+  visibility: RuleVisibility;
+
+  /** 협업 메트릭 */
+  collaboration: RuleCollaboration;
+
+  /** 원본 정보 (포크된 경우) */
+  origin?: RuleOrigin;
+
+  /** 발행 상태 */
+  publishedAt?: string;
+
+  /** 마켓플레이스 게시 여부 */
+  listedInMarketplace?: boolean;
+}
+
+// ============================================================================
+// Proposal Types
+// ============================================================================
+
+/** 제안 리뷰 */
+export interface ProposalReview {
+  id: string;
+  proposalId: string;
+  reviewerId: string;
+  reviewer: User;
+  decision: ReviewDecision;
+  comment?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** 제안 코멘트 */
+export interface ProposalComment {
+  id: string;
+  proposalId: string;
+  authorId: string;
+  author: User;
+  content: string;
+  /** 인라인 코멘트인 경우 위치 */
+  lineNumber?: number;
+  field?: string;
+  parentId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** 제안 변경 내역 */
+export interface ProposalChange {
+  field: string;
+  oldValue: unknown;
+  newValue: unknown;
+}
+
+/** 규칙 제안 */
+export interface Proposal {
+  id: string;
+  teamId: string;
+  ruleId: string;
+  type: ProposalType;
+  status: ProposalStatus;
+  title: string;
+  description?: string;
+
+  /** 제안된 규칙 내용 (create/update) */
+  proposedRule?: Partial<SharedRule>;
+
+  /** 기존 규칙 내용 (update/deprecate/delete) */
+  currentRule?: SharedRule;
+
+  /** 변경 내역 */
+  changes?: ProposalChange[];
+
+  /** 제안자 */
+  authorId: string;
+  author: User;
+
+  /** 리뷰어 목록 */
+  reviewers?: User[];
+
+  /** 리뷰 */
+  reviews: ProposalReview[];
+
+  /** 코멘트 */
+  comments?: ProposalComment[];
+
+  /** 머지 조건 */
+  mergeConditions?: {
+    minApprovals: number;
+    currentApprovals: number;
+    requiredReviewers?: string[];
+  };
+
+  createdAt: string;
+  updatedAt: string;
+  mergedAt?: string;
+  mergedBy?: string;
+}
+
+// ============================================================================
+// Remote Sync Types
+// ============================================================================
+
+/** 원격 동기화 설정 */
+export interface RemoteSyncConfig {
+  /** 원격 서버 URL */
+  serverUrl: string;
+
+  /** 팀 ID */
+  teamId?: string;
+
+  /** 타임아웃 (ms) */
+  timeout: number;
+
+  /** 자동 동기화 활성화 */
+  autoSync: boolean;
+
+  /** 동기화 간격 (ms) */
+  syncInterval?: number;
+
+  /** 오프라인 큐 활성화 */
+  offlineQueue: boolean;
+}
+
+/** 동기화 상태 */
+export interface SyncState {
+  /** 마지막 동기화 시각 */
+  lastSyncAt?: string;
+
+  /** 동기화 진행 중 여부 */
+  isSyncing: boolean;
+
+  /** 오프라인 여부 */
+  isOffline: boolean;
+
+  /** 대기 중인 변경 수 */
+  pendingChanges: number;
+
+  /** 마지막 에러 */
+  lastError?: string;
+}
+
+/** 원격 동기화 결과 */
+export interface RemoteSyncResult {
+  success: boolean;
+  direction: RemoteSyncDirection;
+
+  /** 푸시된 규칙 */
+  pushed?: {
+    count: number;
+    rules: string[];
+  };
+
+  /** 풀된 규칙 */
+  pulled?: {
+    count: number;
+    rules: string[];
+    newRules: string[];
+    updatedRules: string[];
+  };
+
+  /** 충돌 */
+  conflicts?: RemoteSyncConflict[];
+
+  /** 오프라인 큐에 저장됨 */
+  queued?: boolean;
+
+  error?: string;
+  timestamp: string;
+}
+
+/** 원격 동기화 충돌 */
+export interface RemoteSyncConflict {
+  ruleId: string;
+  localRule: Rule;
+  remoteRule: Rule;
+  conflictFields: string[];
+  resolution?: 'local' | 'remote' | 'manual';
+  resolvedRule?: Rule;
+}
+
+/** 오프라인 큐 항목 */
+export interface OfflineQueueItem {
+  id: string;
+  type: 'push' | 'pull' | 'delete';
+  ruleId?: string;
+  rule?: Rule;
+  timestamp: string;
+  retryCount: number;
+  lastError?: string;
+}
+
+// ============================================================================
+// Marketplace Types
+// ============================================================================
+
+/** 마켓플레이스 카테고리 */
+export interface MarketplaceCategory {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  ruleCount: number;
+  iconUrl?: string;
+}
+
+/** 마켓플레이스 컬렉션 */
+export interface MarketplaceCollection {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  curatorId: string;
+  curator: User;
+  rules: SharedRule[];
+  rulesCount: number;
+  adoptionCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** 마켓플레이스 검색 옵션 */
+export interface MarketplaceSearchOptions {
+  query?: string;
+  category?: string;
+  tags?: string[];
+  minRating?: number;
+  sortBy?: 'popular' | 'recent' | 'rating' | 'adoptions';
+  limit?: number;
+  offset?: number;
+}
+
+/** 마켓플레이스 검색 결과 */
+export interface MarketplaceSearchResult {
+  rules: SharedRule[];
+  total: number;
+  page: number;
+  pageSize: number;
+  hasMore: boolean;
+}
+
+// ============================================================================
+// Analytics Types
+// ============================================================================
+
+/** 규칙 분석 메트릭 */
+export interface RuleAnalytics {
+  ruleId: string;
+  teamId: string;
+
+  /** 위반 횟수 */
+  violationCount: number;
+
+  /** 자동 수정 횟수 */
+  autoFixCount: number;
+
+  /** 준수율 (0-100) */
+  complianceRate: number;
+
+  /** 일별 통계 */
+  dailyStats: {
+    date: string;
+    violations: number;
+    fixes: number;
+  }[];
+
+  /** 파일별 위반 */
+  fileHotspots: {
+    path: string;
+    violations: number;
+  }[];
+
+  /** 시간대별 위반 */
+  hourlyPattern: number[];
+
+  period: {
+    from: string;
+    to: string;
+  };
+}
+
+/** 팀 분석 메트릭 */
+export interface TeamAnalytics {
+  teamId: string;
+
+  /** 전체 준수율 */
+  overallComplianceRate: number;
+
+  /** 활성 규칙 수 */
+  activeRulesCount: number;
+
+  /** 제안 통계 */
+  proposalStats: {
+    total: number;
+    pending: number;
+    approved: number;
+    rejected: number;
+  };
+
+  /** 멤버별 기여도 */
+  memberContributions: {
+    userId: string;
+    user: User;
+    rulesCreated: number;
+    proposalsSubmitted: number;
+    reviewsCompleted: number;
+    points: number;
+  }[];
+
+  /** 규칙 건강도 점수 (0-100) */
+  healthScore: number;
+
+  period: {
+    from: string;
+    to: string;
+  };
+}
+
+// ============================================================================
+// Notification Types
+// ============================================================================
+
+/** 알림 타입 */
+export type NotificationType =
+  | 'proposal_created'
+  | 'proposal_approved'
+  | 'proposal_rejected'
+  | 'proposal_merged'
+  | 'review_requested'
+  | 'comment_added'
+  | 'rule_adopted'
+  | 'team_invite'
+  | 'sync_conflict';
+
+/** 알림 */
+export interface Notification {
+  id: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  data?: Record<string, unknown>;
+  read: boolean;
+  createdAt: string;
+  readAt?: string;
+}

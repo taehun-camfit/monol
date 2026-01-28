@@ -18,6 +18,7 @@ import type {
 import { SyncError } from './errors.js';
 import { getAdapter, getAvailableAdapters } from './adapters/platform-adapter.js';
 import RulebookManager from './rulebook-manager.js';
+import { getServerSync, loadConfigFromEnv } from './server-sync.js';
 
 // ============================================================================
 // SyncManager Class
@@ -102,6 +103,20 @@ export class SyncManager {
       if (direction === 'both') {
         const remoteRules = await this.pullFromPlatform(platformName);
         result.conflicts = this.detectSyncConflicts(localRules, remoteRules);
+      }
+
+      // 서버에 동기화 이벤트 전송 (best-effort)
+      if (result.success) {
+        try {
+          const serverSync = getServerSync(loadConfigFromEnv());
+          await serverSync.syncPlatformSync(
+            platformName,
+            localRules.length,
+            direction
+          );
+        } catch {
+          // 서버 동기화 실패는 무시
+        }
       }
     } catch (e) {
       result.success = false;
