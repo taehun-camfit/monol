@@ -1,0 +1,24 @@
+[submodule "monol-datastore"]
+	path = monol-datastore
+	url = git@github.com:Camfit-Taehun/monol-datastore.git
+[submodule "monol-workbase"]
+	path = monol-workbase
+	url = git@github.com:Camfit-Taehun/monol-workbase.git
+[submodule "monol-x"]
+	path = monol-x
+	url = git@github.com:Camfit-Taehun/monol-x.git
+[submodule "monol-channels"]
+	path = monol-channels
+	url = git@github.com:Camfit-Taehun/monol-channels.git
+[submodule "monol-logs"]
+	path = monol-logs
+	url = git@github.com:Camfit-Taehun/monol-logs.git
+[submodule "monol-design"]
+	path = monol-design
+	url = git@github.com:Camfit-Taehun/monol-design.git
+[submodule "monol-plugin-scout"]
+	path = monol-plugin-scout
+	url = git@github.com:Camfit-Taehun/monol-plugin-scout.git
+[submodule "monol-rulebook"]
+	path = monol-rulebook
+	url = git@github.com:Camfit-Taehun/monol-rulebook.git
