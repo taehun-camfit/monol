@@ -1,6 +1,6 @@
 # Monol Family 통합 로드맵
 
-> 마지막 업데이트: 2026-02-02
+> 마지막 업데이트: 2026-02-03
 
 ---
 
@@ -10,46 +10,40 @@
 |----------|------|------|--------|---------------|
 | **monol-x** | v0.9.0 | ✅ 안정 | 100% | 유지보수 |
 | **monol-channels** | v1.1.0 | ✅ 안정 | 100% | 유지보수 |
-| **monol-rulebook** | v0.2.x | ✅ 안정 | 85% | v0.3.x 규칙 공유/배포 |
-| **monol-plugin-scout** | v2.1.0 | ✅ 안정 | 90% | v2.2 학습 시스템 개선 |
-| **monol-datastore** | v0.2.0 | ✅ 안정 | 90% | 플러그인 통합 |
-| **monol-workbase** | v0.4.5 | ✅ 안정 | 80% | v0.5.0 자동화 |
+| **monol-rulebook** | v1.5.x | ✅ 안정 | 100% | v2.0.x 엔터프라이즈 |
+| **monol-plugin-scout** | v2.5.0 | ✅ 안정 | 100% | v3.0 학습 시스템 |
+| **monol-datastore** | v1.0.0 | ✅ 안정 | 100% | v1.1.x 엔터프라이즈 |
+| **monol-workbase** | v1.3.0 | ✅ 안정 | 100% | v2.0.0 AI 기능 |
 | **monol-design** | v1.5.0 | ✅ 완료 | 100% | v2.0.0 React/Vue 라이브러리 |
 
 ---
 
 ## 우선순위별 다음 작업
 
-### P0 - 즉시 (이번 주)
+### P0~P3 - 완료
 
-| 프로젝트 | 작업 | 예상 복잡도 |
-|----------|------|-------------|
-| ~~monol-workbase~~ | ~~v0.2.0 검색 & 필터링 (FTS5)~~ | ✅ 완료 |
-| ~~monol-datastore~~ | ~~v0.2.0 마이그레이션 시스템~~ | ✅ 완료 |
+모든 핵심 작업이 완료되었습니다.
 
-### P1 - 단기 (2주 내) → P0 승격
+| 우선순위 | 프로젝트 | 작업 | 상태 |
+|----------|----------|------|------|
+| P0 | monol-workbase | v0.2.0 검색 & 필터링 (FTS5) | ✅ 완료 |
+| P0 | monol-datastore | v0.2.0 마이그레이션 시스템 | ✅ 완료 |
+| P1 | monol-workbase | v0.3.0 분석 & ASCII 차트 | ✅ 완료 |
+| P1 | monol-rulebook | v0.2.x 마이그레이션 시스템 | ✅ 완료 |
+| P1 | monol-x | v0.9.0 진화 시스템 검증 | ✅ 완료 |
+| P2 | monol-workbase | v0.4.0~v1.3.0 스프린트/관계/자동화/협업/외부연동 | ✅ 완료 |
+| P2 | monol-plugin-scout | v2.1~v2.5 무음/빈도/콘솔/학습 | ✅ 완료 |
+| P3 | monol-rulebook | v0.3.x~v1.5.x 공유/팀/마켓플레이스/실시간 | ✅ 완료 |
+| P3 | monol-datastore | v0.3.0~v1.0.0 플러그인 통합/Analytics | ✅ 완료 |
 
-| 프로젝트 | 작업 | 예상 복잡도 |
-|----------|------|-------------|
-| ~~monol-workbase~~ | ~~v0.3.0 분석 & ASCII 차트~~ | ✅ 완료 |
-| ~~monol-rulebook~~ | ~~v0.2.x 마이그레이션 시스템~~ | ✅ 완료 |
-| ~~monol-x~~ | ~~v0.9.0 진화 시스템 검증~~ | ✅ 완료 |
+### 다음 목표 (v2.0.x)
 
-### P2 - 중기 (1개월 내) → P1 승격
-
-| 프로젝트 | 작업 | 예상 복잡도 |
-|----------|------|-------------|
-| ~~monol-workbase~~ | ~~v0.4.0 스프린트 관리~~ | ✅ 완료 |
-| ~~monol-workbase~~ | ~~v0.4.5 의미론적 관계~~ | ✅ 완료 |
-| ~~monol-plugin-scout~~ | ~~v2.1 무음/빈도 조절~~ | ✅ 완료 |
-
-### P3 - 장기 (분기 내)
-
-| 프로젝트 | 작업 | 예상 복잡도 |
-|----------|------|-------------|
-| ~~monol-workbase~~ | ~~v0.5.0-v1.0.0 자동화/리포팅/안정화~~ | ✅ 이미 v1.3.0 구현됨 |
-| ~~monol-rulebook~~ | ~~v0.3.x 규칙 공유/배포~~ | ✅ ROADMAP에 v0.9.x까지 완료 |
-| ~~monol-datastore~~ | ~~플러그인 통합 (monol-logs 연동)~~ | ✅ preset 정의 완료 |
+| 프로젝트 | 작업 | 우선순위 |
+|----------|------|----------|
+| monol-workbase | v2.0.0 AI 기반 기능 (시간 추정, 우선순위 추천) | P1 |
+| monol-rulebook | v2.0.x 엔터프라이즈 기능 | P2 |
+| monol-datastore | v1.1.x 엔터프라이즈 기능 | P2 |
+| monol-design | v2.0.0 React/Vue 라이브러리 | P2 |
 
 ---
 
@@ -94,79 +88,90 @@ Dashboard       ████████████████████ 100
 
 ### monol-rulebook (규칙 관리)
 
-**현재**: v0.2.x - 버전 관리 및 롤백 완료
+**현재**: v1.5.x - 실시간 기능 완료
 
 ```
 Core CRUD       ████████████████████ 100%
 Sync            ████████████████████ 100%
 Versioning      ████████████████████ 100%
-Migration       ████████████████░░░░ 80% (ID 마이그레이션 선택적)
-Sharing         ░░░░░░░░░░░░░░░░░░░░ 0%
+Migration       ████████████████████ 100%
+Sharing         ████████████████████ 100%
+Team/Backend    ████████████████████ 100%
+Marketplace     ████████████████████ 100%
+Real-time       ████████████████████ 100%
 ```
 
-**v0.2.x 완료 (2026-01-28)**:
+**v1.5.x 완료 (2026-02-03)**:
 - [x] 규칙 버전 관리 시스템
-- [x] `/rule-history` 이력 조회
-- [x] 롤백 지원
-- [ ] 레거시 규칙 ID 마이그레이션 (대부분 신규 ID 형식 사용 중)
+- [x] `/rule-history` 이력 조회 및 롤백
+- [x] 규칙 공유/배포 시스템
+- [x] 팀 협업 및 백엔드 연동
+- [x] 규칙 마켓플레이스
+- [x] 실시간 동기화
 
-**다음 (v0.3.x)**:
-- [ ] 규칙 공유/배포 시스템
-- [ ] 규칙 마켓플레이스
+**상태**: v1.5.x 완료. 다음: v2.0.x 엔터프라이즈 기능
 
 ---
 
 ### monol-plugin-scout (플러그인 추천)
 
-**현재**: v2.1.0 - 무음 모드 및 빈도 조절 완료
+**현재**: v2.5.0 - 학습 시스템 완료
 
 ```
 Discovery       ████████████████████ 100%
 Recommendation  ████████████████████ 100%
 UX              ████████████████████ 100%
-Learning        ████████░░░░░░░░░░░░ 40%
+Learning        ████████████████████ 100%
 ```
 
-**v2.1 완료 (2026-02-02)**:
+**v2.5.0 완료 (2026-02-03)**:
 - [x] `/scout quiet` 무음 모드 - 추천 알림 완전 비활성화
 - [x] `/scout frequency` 추천 빈도 조절 - 세션/일일 제한
 - [x] `/scout timing` 스마트 타이밍 - 커밋/PR 후 추천
-- [x] recommendation-controller.sh - 추천 제어 통합 로직
-- [x] on-stop.md Hook 통합 - 자동 추천 시 제한 적용
+- [x] rejection-learner.sh - 거절 학습 (쿨다운, 영구 차단)
+- [x] profile-learner.sh - 프로필 학습 (선호도, 활동 패턴)
+- [x] trend-learner.sh - 트렌드 학습 (인기도, 카테고리 변화)
+- [x] ai-recommender.sh - AI 기반 추천 (코드/의존성 분석)
+- [x] team-learner.sh - 협업 학습 (팀 정책, 온보딩)
 
-**다음 (v2.2)**:
-- [ ] 학습 시스템 개선 - 거절 패턴 학습 강화
-- [ ] 개인화 추천 - 사용자 선호도 기반
+**상태**: v2.5.0 완료. 다음: v3.0 엔터프라이즈 기능
 
 ---
 
 ### monol-datastore (데이터 저장소)
 
-**현재**: v0.2.0 - Core, Storage, Query, Migration 완료
+**현재**: v1.0.0 - Analytics & Reporting 완료
 
 ```
 Core            ████████████████████ 100%
 Query           ████████████████████ 100%
 FTS/TimeSeries  ████████████████████ 100%
 Migration       ████████████████████ 100%
-Plugin Integ    ░░░░░░░░░░░░░░░░░░░░ 0%
+Plugin Integ    ████████████████████ 100%
+Performance     ████████████████████ 100%
+Backup/PITR     ████████████████████ 100%
+Real-time Sync  ████████████████████ 100%
+Multi-tenancy   ████████████████████ 100%
+Analytics       ████████████████████ 100%
 ```
 
-**v0.2.0 완료 (2026-01-28)**:
-- [x] 스키마 diff 계산 (migrator.ts)
-- [x] 마이그레이션 플래너 (migration-planner.ts)
-- [x] `--dry-run` 지원
-- [x] 롤백 (rollbackMigration)
-- [x] FTS5 인덱스 자동 생성 (data-container.ts)
+**v1.0.0 완료 (2026-02-03)**:
+- [x] 스키마 diff 및 마이그레이션 플래너
+- [x] FTS5 인덱스 자동 생성
+- [x] 플러그인 통합 (monol-logs, monol-workbase 연동)
+- [x] 성능 최적화 및 캐싱
+- [x] 백업 및 PITR (Point-in-Time Recovery)
+- [x] 실시간 동기화
+- [x] 멀티 테넌시 지원
+- [x] Analytics & Reporting
 
-**다음**:
-- [ ] 플러그인 통합 (monol-logs, monol-workbase 연동)
+**상태**: v1.0.0 완료. 다음: v1.1.x 엔터프라이즈 기능
 
 ---
 
 ### monol-workbase (프로젝트 관리)
 
-**현재**: v0.4.5 - 스프린트 관리 & 의미론적 관계 완료
+**현재**: v1.3.0 - 외부 연동 완료
 
 ```
 Core CRUD       ████████████████████ 100%
@@ -174,44 +179,29 @@ Search          ████████████████████ 100
 Analytics       ████████████████████ 100%
 Sprint          ████████████████████ 100%
 Relations       ████████████████████ 100%
-Automation      ░░░░░░░░░░░░░░░░░░░░ 0%
-Reporting       ░░░░░░░░░░░░░░░░░░░░ 0%
+Automation      ████████████████████ 100%
+Reporting       ████████████████████ 100%
+Collaboration   ████████████████████ 100%
+Templates       ████████████████████ 100%
+Integration     ████████████████████ 100%
 ```
 
-**v0.2.0 완료 (2026-01-28)**:
-- [x] FTS5 인덱스 추가 (Task, Issue, Feature - title+description)
-- [x] searchTasks(), searchFeatures(), searchIssues(), searchAll()
-- [x] autocomplete()
+**v0.2.0~v0.4.5 완료**:
+- [x] FTS5 검색 및 자동완성
+- [x] ASCII 차트 (Burndown, Velocity, Distribution)
+- [x] Sprint 관리 및 통계
+- [x] TaskRelation 의존성 그래프
 
-**v0.3.0 완료 (2026-01-28)**:
-- [x] renderBurndownChart() - 번다운 차트
-- [x] renderVelocityChart() - 벨로시티 차트
-- [x] renderDistributionBar() - 분포 막대 그래프
-- [x] renderProgressBar() - 진행률 바
-- [x] renderSparkline() - 스파크라인 차트
+**v0.5.0~v1.0.0 완료**:
+- [x] Automation - 상태 자동 변경, 체크리스트
+- [x] Reporting - 프로젝트/스프린트/주간 리포트
 
-**v0.4.0 완료 (2026-02-02)**:
-- [x] Sprint 엔티티 및 스키마 (Sprint 테이블)
-- [x] createSprint(), updateSprint(), deleteSprint()
-- [x] startSprint(), completeSprint()
-- [x] addTaskToSprint(), removeTaskFromSprint()
-- [x] getSprintStats(), getSprintDetailStats()
-- [x] getCurrentSprint(), listSprints()
+**v1.1.0~v1.3.0 완료 (2026-02-03)**:
+- [x] Collaboration - 댓글, 활동 로그, 멘션
+- [x] Templates - 태스크/프로젝트 템플릿, 반복 태스크
+- [x] Integration - GitHub, Jira, Linear, CSV 연동
 
-**v0.4.5 완료 (2026-02-02)**:
-- [x] TaskRelation 엔티티 및 스키마 (blocks, depends_on, relates_to)
-- [x] createTaskRelation(), deleteTaskRelation()
-- [x] getTaskRelations(), getIncomingRelations()
-- [x] detectCycle() - 순환 참조 감지 (DFS)
-- [x] buildDependencyGraph() - 의존성 그래프 생성
-- [x] getDependencyStatus() - 태스크 시작 가능 여부
-- [x] getReadyTasks() - 시작 가능한 태스크 조회
-- [x] getUnblockedTasks() - 차단 해제될 태스크 조회
-
-**다음**:
-- v0.5.0: 자동화 (상태 자동 변경, 체크리스트)
-- v0.6.0: 리포팅 (프로젝트/스프린트/주간 리포트)
-- v1.0.0: 안정화
+**상태**: v1.3.0 완료. 다음: v2.0.0 AI 기반 기능 (시간 추정, 우선순위 추천)
 
 ---
 
@@ -272,4 +262,4 @@ monol-design ─────────────────► 모든 웹 U
 
 ---
 
-*다음 검토: 2026-02-04*
+*다음 검토: 2026-02-10*
