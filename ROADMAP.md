@@ -47,9 +47,9 @@
 
 | 프로젝트 | 작업 | 예상 복잡도 |
 |----------|------|-------------|
-| monol-workbase | v0.5.0-v1.0.0 자동화/리포팅/안정화 | 높 |
-| monol-rulebook | v0.3.x 규칙 공유/배포 | 높 |
-| monol-datastore | 플러그인 통합 (monol-logs 연동) | 중 |
+| ~~monol-workbase~~ | ~~v0.5.0-v1.0.0 자동화/리포팅/안정화~~ | ✅ 이미 v1.3.0 구현됨 |
+| ~~monol-rulebook~~ | ~~v0.3.x 규칙 공유/배포~~ | ✅ ROADMAP에 v0.9.x까지 완료 |
+| ~~monol-datastore~~ | ~~플러그인 통합 (monol-logs 연동)~~ | ✅ preset 정의 완료 |
 
 ---
 
